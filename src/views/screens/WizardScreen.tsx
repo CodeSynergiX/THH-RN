@@ -17,11 +17,13 @@ import { Header } from '../components/Header';
 import { StepIndicator } from '../components/StepIndicator';
 
 interface WizardScreenProps {
+  initialCategory?: string | number | null;
   onCancel: () => void;
   onTrackCase: (caseNo: string) => void;
 }
 
 export const WizardScreen: React.FC<WizardScreenProps> = ({
+  initialCategory,
   onCancel,
   onTrackCase,
 }) => {
@@ -52,7 +54,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
     prevStep,
     submitApplication,
     resetWizard,
-  } = useWizardViewModel();
+  } = useWizardViewModel(initialCategory);
 
   // Success Screen
   if (submitSuccess && generatedCaseNo) {
@@ -245,6 +247,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
             <View style={[styles.categoryGrid, { marginTop: spacing.md }]}>
               {categories.map(cat => {
                 const isSelected = formData.categoryId === cat.id;
+                const iconName = cat.icon || 'folder-outline';
                 return (
                   <TouchableOpacity
                     key={cat.id}
@@ -265,24 +268,66 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                       },
                     ]}
                   >
-                    <Text
+                    <View style={styles.categoryCardLeft}>
+                      <View
+                        style={[
+                          styles.catIconWrap,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primary
+                              : colors.surfaceSubtle,
+                            borderRadius: borderRadius.sm,
+                          },
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name={iconName}
+                          size={22}
+                          color={isSelected ? '#FFFFFF' : colors.primary}
+                        />
+                      </View>
+                      <View style={styles.catTextWrap}>
+                        <Text
+                          style={[
+                            styles.categoryName,
+                            {
+                              color: isSelected ? colors.primary : colors.text,
+                              fontSize: typography.fontSizeBase,
+                            },
+                          ]}
+                        >
+                          {cat.name_gu || cat.name_en || cat.slug}
+                        </Text>
+                        {cat.name_en && cat.name_gu ? (
+                          <Text
+                            style={[
+                              styles.categorySub,
+                              {
+                                color: colors.textMuted,
+                                fontSize: typography.fontSizeXs,
+                              },
+                            ]}
+                          >
+                            {cat.name_en}
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+                    <View
                       style={[
-                        styles.categoryName,
+                        styles.radioIndicator,
                         {
-                          color: isSelected ? colors.primary : colors.text,
-                          fontSize: typography.fontSizeBase,
+                          borderColor: isSelected
+                            ? colors.primary
+                            : colors.border,
+                          backgroundColor: isSelected
+                            ? colors.primary
+                            : 'transparent',
                         },
                       ]}
                     >
-                      {cat.name_gu || cat.name_en || cat.slug}
-                    </Text>
-                    {isSelected && (
-                      <Text
-                        style={{ color: colors.primary, fontWeight: '800' }}
-                      >
-                        ✓
-                      </Text>
-                    )}
+                      {isSelected && <Text style={styles.radioCheck}>✓</Text>}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -1113,8 +1158,40 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1.5,
   },
+  categoryCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  catIconWrap: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  catTextWrap: {
+    flex: 1,
+  },
   categoryName: {
     fontWeight: '700',
+  },
+  categorySub: {
+    marginTop: 2,
+  },
+  radioIndicator: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  radioCheck: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
   },
   subCatRow: {
     flexDirection: 'row',

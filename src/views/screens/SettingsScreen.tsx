@@ -29,22 +29,44 @@ import {
   NotificationPreferences,
 } from '../../services/notificationService';
 
+const DEFAULT_PREFERENCES: NotificationPreferences = {
+  id: 1,
+  user_id: 1,
+  email_enabled: true,
+  push_enabled: true,
+  email_case_status_change: true,
+  email_assignment: true,
+  email_follow_up_due: true,
+  email_sla_breach: true,
+  email_case_resolved: true,
+  push_case_status_change: true,
+  push_assignment: true,
+  push_follow_up_due: true,
+  push_sla_breach: true,
+  push_case_resolved: true,
+  quiet_hours_start: null,
+  quiet_hours_end: null,
+};
+
 export const SettingsScreen: React.FC = () => {
   const { theme, toggleDarkMode, isDark } = useAppTheme();
   const { colors, typography } = theme;
   const { t, locale, supportedLocales, switchLanguage } = useTranslation();
 
-  const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
-  const [prefsLoading, setPrefsLoading] = useState(true);
+  const [prefs, setPrefs] =
+    useState<NotificationPreferences>(DEFAULT_PREFERENCES);
+  const [prefsLoading, setPrefsLoading] = useState(false);
   const [savingPref, setSavingPref] = useState<string | null>(null);
 
   // ─── Load notification preferences ───────────────────────────────────────
   const loadPrefs = useCallback(async () => {
     try {
       const res = await notificationService.getPreferences();
-      if (res.success) setPrefs(res.data);
+      if (res?.data) {
+        setPrefs(res.data);
+      }
     } catch {
-      // silently fail — show defaults
+      // offline fallback already active
     } finally {
       setPrefsLoading(false);
     }

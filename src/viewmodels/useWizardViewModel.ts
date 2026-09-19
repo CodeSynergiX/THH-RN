@@ -23,7 +23,7 @@ export interface WizardFormData {
   beneficiaryPhone: string;
 }
 
-export function useWizardViewModel() {
+export function useWizardViewModel(initialCategory?: string | number | null) {
   const [step, setStep] = useState<number>(1);
   const [categories, setCategories] = useState<Category[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -63,11 +63,27 @@ export function useWizardViewModel() {
         ]);
         setCategories(cats);
         setDistricts(dists);
+
+        if (initialCategory !== undefined && initialCategory !== null) {
+          const match = cats.find(
+            c =>
+              c.id === Number(initialCategory) ||
+              c.slug.toLowerCase() === String(initialCategory).toLowerCase(),
+          );
+          if (match) {
+            setFormData(prev => ({
+              ...prev,
+              categoryId: match.id,
+              subCategoryId: match.sub_categories?.[0]?.id || null,
+            }));
+            setAvailableSubCategories(match.sub_categories || []);
+          }
+        }
       } catch (err) {
         console.warn('Failed to fetch master data:', err);
       }
     })();
-  }, []);
+  }, [initialCategory]);
 
   // Update available subcategories when category changes
   const selectCategory = useCallback(

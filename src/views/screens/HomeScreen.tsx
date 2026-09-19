@@ -17,7 +17,7 @@ import { defaultApiClient } from '../../services/apiClient';
 
 export interface HomeScreenProps {
   onSelectModule: (moduleKey: string) => void;
-  onNavigateToWizard: () => void;
+  onNavigateToWizard: (category?: string) => void;
   onNavigateToCase?: (caseNo: string) => void;
 }
 

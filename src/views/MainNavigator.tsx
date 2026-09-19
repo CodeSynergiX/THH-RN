@@ -22,6 +22,9 @@ export const MainNavigator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabRoute>('home');
   const [selectedCaseNo, setSelectedCaseNo] = useState<string | null>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [wizardCategory, setWizardCategory] = useState<string | number | null>(
+    null,
+  );
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const fetchUnreadCount = useCallback(async () => {
@@ -47,7 +50,8 @@ export const MainNavigator: React.FC = () => {
     setActiveTab('track');
   };
 
-  const navigateToWizard = () => {
+  const navigateToWizard = (category?: string | number | null) => {
+    setWizardCategory(category ?? null);
     setActiveTab('wizard');
   };
 
@@ -106,23 +110,31 @@ export const MainNavigator: React.FC = () => {
             <CommunityModuleScreen
               moduleKey={selectedModule}
               onBack={() => setSelectedModule(null)}
-              onNavigateToWizard={() => {
+              onNavigateToWizard={(initialCategory?: string) => {
+                const targetCat = initialCategory || selectedModule;
                 setSelectedModule(null);
-                navigateToWizard();
+                navigateToWizard(targetCat);
               }}
             />
           ) : (
             <HomeScreen
               onSelectModule={key => setSelectedModule(key)}
-              onNavigateToWizard={navigateToWizard}
+              onNavigateToWizard={category => navigateToWizard(category)}
               onNavigateToCase={caseNo => navigateToCaseTracker(caseNo)}
             />
           ))}
 
         {activeTab === 'wizard' && (
           <WizardScreen
-            onCancel={() => setActiveTab('home')}
-            onTrackCase={caseNo => navigateToCaseTracker(caseNo)}
+            initialCategory={wizardCategory}
+            onCancel={() => {
+              setWizardCategory(null);
+              setActiveTab('home');
+            }}
+            onTrackCase={caseNo => {
+              setWizardCategory(null);
+              navigateToCaseTracker(caseNo);
+            }}
           />
         )}
 

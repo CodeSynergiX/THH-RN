@@ -5,6 +5,7 @@ export interface Village {
   name_gu: string;
   census_code?: string;
   is_tribal_majority?: boolean;
+  is_active?: boolean;
 }
 
 export interface Taluka {
@@ -13,6 +14,7 @@ export interface Taluka {
   name_en: string;
   name_gu: string;
   code?: string;
+  is_active?: boolean;
   villages?: Village[];
 }
 
@@ -20,7 +22,8 @@ export interface District {
   id: number;
   name_en: string;
   name_gu: string;
-  code: string;
+  code?: string;
   is_tribal_majority?: boolean;
+  is_active?: boolean;
   talukas?: Taluka[];
 }

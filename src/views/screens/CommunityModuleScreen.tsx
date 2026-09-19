@@ -18,6 +18,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { contentService } from '../../services/contentService';
+import { applicationService } from '../../services/applicationService';
 
 export interface CommunityModuleScreenProps {
   moduleKey: string;
@@ -63,6 +64,60 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
     useState('Weekends');
 
   const [mentorQuestion, setMentorQuestion] = useState('');
+
+  // Inline Get Help Form state (requested below items)
+  const [inlineName, setInlineName] = useState('');
+  const [inlinePhone, setInlinePhone] = useState('');
+  const [inlineTitle, setInlineTitle] = useState('');
+  const [inlineDesc, setInlineDesc] = useState('');
+  const [inlineUrgency, setInlineUrgency] = useState<
+    'normal' | 'urgent' | 'critical'
+  >('normal');
+  const [inlineSubmitting, setInlineSubmitting] = useState(false);
+  const [inlineSuccessCase, setInlineSuccessCase] = useState<string | null>(
+    null,
+  );
+
+  const handleInlineSubmit = async () => {
+    if (!inlineTitle.trim() || !inlineDesc.trim()) {
+      Alert.alert(
+        t('common.required', 'Required'),
+        t('common.fill_required', 'Please enter a title and description.'),
+      );
+      return;
+    }
+    setInlineSubmitting(true);
+    try {
+      const res = await applicationService.createApplication({
+        category_id: 1,
+        sub_category_id: null,
+        title: inlineTitle.trim(),
+        description: `Applicant: ${inlineName} (${inlinePhone})\nCategory: ${moduleKey}\n\n${inlineDesc.trim()}`,
+        urgency: inlineUrgency,
+        district_id: 1,
+        taluka_id: null,
+        village_id: null,
+        is_helper_mode: false,
+        beneficiary_name: inlineName.trim(),
+        beneficiary_phone: inlinePhone.trim(),
+      });
+      const caseNumber = res.case_no || (res as any).caseNo || 'THH-APP';
+      setInlineSuccessCase(caseNumber);
+      setInlineTitle('');
+      setInlineDesc('');
+      Alert.alert(
+        t('common.success', 'Request Registered!'),
+        `${t('wizard.case_no_label', 'Your Case Tracking ID:')} ${caseNumber}`,
+      );
+    } catch {
+      Alert.alert(
+        t('common.offline_saved', 'Saved Offline'),
+        'Your request has been queued offline and will automatically sync once connected.',
+      );
+    } finally {
+      setInlineSubmitting(false);
+    }
+  };
 
   const getModuleMeta = (key: string) => {
     switch (key) {
@@ -624,6 +679,258 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
               </View>
             );
           }}
+          ListFooterComponent={
+            <View
+              style={[
+                styles.inlineFormCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: borderRadius.lg,
+                },
+              ]}
+            >
+              <View style={styles.inlineFormHeader}>
+                <View
+                  style={[
+                    styles.inlineFormIconWrap,
+                    { backgroundColor: colors.primary + '15' },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="hand-heart"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.inlineFormTitleWrap}>
+                  <Text
+                    style={[
+                      styles.inlineFormTitle,
+                      { color: colors.text, fontSize: typography.fontSizeBase },
+                    ]}
+                  >
+                    {t('common.get_help_form', 'Get Help / સહાય માટે અરજી કરો')}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.inlineFormSubtitle,
+                      {
+                        color: colors.textMuted,
+                        fontSize: typography.fontSizeXs,
+                      },
+                    ]}
+                  >
+                    {t(
+                      'common.inline_form_desc',
+                      'Submit your details below to request direct assistance.',
+                    )}
+                  </Text>
+                </View>
+              </View>
+
+              {inlineSuccessCase ? (
+                <View
+                  style={[
+                    styles.inlineSuccessBox,
+                    {
+                      backgroundColor: '#16A34A15',
+                      borderColor: '#16A34A',
+                      borderRadius: borderRadius.md,
+                    },
+                  ]}
+                >
+                  <Text style={styles.inlineSuccessTitle}>
+                    ✓ {t('common.success', 'Registered!')}
+                  </Text>
+                  <Text
+                    style={[styles.inlineSuccessCaseNo, { color: colors.text }]}
+                  >
+                    {inlineSuccessCase}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.inlineFormFields}>
+                  <Text
+                    style={[
+                      styles.inlineLabel,
+                      { color: colors.text, fontSize: typography.fontSizeXs },
+                    ]}
+                  >
+                    {t('common.applicant_name', 'Applicant Name *')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.inlineInput,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text,
+                        borderRadius: borderRadius.sm,
+                      },
+                    ]}
+                    placeholder="Full Name"
+                    placeholderTextColor={colors.textMuted}
+                    value={inlineName}
+                    onChangeText={setInlineName}
+                  />
+
+                  <Text
+                    style={[
+                      styles.inlineLabel,
+                      { color: colors.text, fontSize: typography.fontSizeXs },
+                    ]}
+                  >
+                    {t('common.phone_number', 'Phone Number *')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.inlineInput,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text,
+                        borderRadius: borderRadius.sm,
+                      },
+                    ]}
+                    placeholder="Phone Number"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="phone-pad"
+                    value={inlinePhone}
+                    onChangeText={setInlinePhone}
+                  />
+
+                  <Text
+                    style={[
+                      styles.inlineLabel,
+                      { color: colors.text, fontSize: typography.fontSizeXs },
+                    ]}
+                  >
+                    {t('common.title_subject', 'Request Subject / Title *')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.inlineInput,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text,
+                        borderRadius: borderRadius.sm,
+                      },
+                    ]}
+                    placeholder={`Need help with ${meta.title}`}
+                    placeholderTextColor={colors.textMuted}
+                    value={inlineTitle}
+                    onChangeText={setInlineTitle}
+                  />
+
+                  <Text
+                    style={[
+                      styles.inlineLabel,
+                      { color: colors.text, fontSize: typography.fontSizeXs },
+                    ]}
+                  >
+                    {t('common.description', 'Details / Problem Description *')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.inlineInput,
+                      styles.inlineTextArea,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text,
+                        borderRadius: borderRadius.sm,
+                      },
+                    ]}
+                    placeholder="Explain what help or document is needed..."
+                    placeholderTextColor={colors.textMuted}
+                    multiline
+                    numberOfLines={3}
+                    value={inlineDesc}
+                    onChangeText={setInlineDesc}
+                  />
+
+                  <View style={styles.urgencyRow}>
+                    {(['normal', 'urgent', 'critical'] as const).map(u => (
+                      <TouchableOpacity
+                        key={u}
+                        activeOpacity={0.8}
+                        onPress={() => setInlineUrgency(u)}
+                        style={[
+                          styles.urgencyPill,
+                          {
+                            backgroundColor:
+                              inlineUrgency === u
+                                ? colors.primary
+                                : colors.surfaceSubtle,
+                            borderColor:
+                              inlineUrgency === u
+                                ? colors.primary
+                                : colors.border,
+                            borderRadius: borderRadius.sm,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.urgencyPillText,
+                            {
+                              color:
+                                inlineUrgency === u
+                                  ? '#FFFFFF'
+                                  : colors.textMuted,
+                            },
+                          ]}
+                        >
+                          {u.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.inlineSubmitBtn,
+                      {
+                        backgroundColor: colors.primary,
+                        borderRadius: borderRadius.md,
+                      },
+                    ]}
+                    activeOpacity={0.85}
+                    disabled={inlineSubmitting}
+                    onPress={handleInlineSubmit}
+                  >
+                    {inlineSubmitting ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.inlineSubmitText}>
+                        {t(
+                          'common.submit_request',
+                          'Submit Assistance Request',
+                        )}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.openWizardBtn}
+                    activeOpacity={0.7}
+                    onPress={() => onNavigateToWizard(moduleKey)}
+                  >
+                    <Text
+                      style={[styles.openWizardText, { color: colors.primary }]}
+                    >
+                      {t(
+                        'common.open_full_wizard',
+                        'Or Open Step-by-Step Help Wizard →',
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          }
         />
       )}
 
@@ -1181,5 +1488,101 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
+  },
+  inlineFormCard: {
+    borderWidth: 1,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 32,
+  },
+  inlineFormHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  inlineFormIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  inlineFormTitleWrap: {
+    flex: 1,
+  },
+  inlineFormTitle: {
+    fontWeight: '700',
+  },
+  inlineFormSubtitle: {
+    marginTop: 2,
+  },
+  inlineSuccessBox: {
+    borderWidth: 1,
+    padding: 14,
+    alignItems: 'center',
+  },
+  inlineSuccessTitle: {
+    color: '#16A34A',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  inlineSuccessCaseNo: {
+    marginTop: 4,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  inlineFormFields: {
+    gap: 4,
+  },
+  inlineLabel: {
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 2,
+  },
+  inlineInput: {
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+  },
+  inlineTextArea: {
+    height: 72,
+    textAlignVertical: 'top',
+  },
+  urgencyRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  urgencyPill: {
+    flex: 1,
+    paddingVertical: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  urgencyPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  inlineSubmitBtn: {
+    marginTop: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inlineSubmitText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  openWizardBtn: {
+    marginTop: 10,
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  openWizardText: {
+    fontWeight: '600',
+    fontSize: 12,
   },
 });

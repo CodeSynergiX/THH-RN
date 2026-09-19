@@ -97,26 +97,61 @@ export const Header: React.FC<HeaderProps> = ({
         <View style={styles.actionRow}>
           {showLanguageToggle && (
             <TouchableOpacity
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={handleLanguageToggle}
               style={[
-                styles.iconBtn,
+                styles.langTogglePill,
                 {
                   backgroundColor: colors.surfaceSubtle,
                   borderColor: colors.border,
-                  borderRadius: borderRadius.md,
-                  paddingHorizontal: spacing.sm,
+                  borderRadius: borderRadius.full,
                 },
               ]}
             >
-              <Text
+              <View
                 style={[
-                  styles.langText,
-                  { color: colors.primary, fontSize: typography.fontSizeXs },
+                  styles.langOption,
+                  locale === 'en' && [
+                    styles.langOptionActive,
+                    { backgroundColor: colors.primary },
+                  ],
                 ]}
               >
-                {locale === 'gu' ? 'EN' : 'ગુ'}
-              </Text>
+                <Text
+                  style={[
+                    styles.langOptionText,
+                    {
+                      color: locale === 'en' ? '#FFFFFF' : colors.textMuted,
+                      fontSize: typography.fontSizeXs,
+                      fontWeight: locale === 'en' ? '800' : '600',
+                    },
+                  ]}
+                >
+                  EN
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.langOption,
+                  locale === 'gu' && [
+                    styles.langOptionActive,
+                    { backgroundColor: colors.primary },
+                  ],
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.langOptionText,
+                    {
+                      color: locale === 'gu' ? '#FFFFFF' : colors.textMuted,
+                      fontSize: typography.fontSizeXs,
+                      fontWeight: locale === 'gu' ? '800' : '600',
+                    },
+                  ]}
+                >
+                  ગુજ
+                </Text>
+              </View>
             </TouchableOpacity>
           )}
 
@@ -129,8 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {
                   backgroundColor: colors.surfaceSubtle,
                   borderColor: colors.border,
-                  borderRadius: borderRadius.md,
-                  paddingHorizontal: spacing.sm,
+                  borderRadius: borderRadius.full,
                 },
               ]}
             >
@@ -196,11 +230,25 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
+  langTogglePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    padding: 2,
+    height: 32,
+  },
+  langOption: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  langOptionActive: {},
+  langOptionText: {},
   iconBtn: {
-    height: 34,
-    minWidth: 36,
+    height: 32,
+    width: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
