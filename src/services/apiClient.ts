@@ -136,6 +136,44 @@ export class ApiClient {
       clearTimeout(timeout);
     }
   }
+  async put<T>(
+    path: string,
+    body?: unknown,
+    options?: RequestOptions,
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      options?.timeoutMs ?? 15000,
+    );
+
+    try {
+      const headers = await this.prepareHeaders(options);
+      const cleanPath = path.startsWith('/') ? path : `/${path}`;
+      const response = await fetch(`${this.baseUrl}${cleanPath}`, {
+        method: 'PUT',
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        let message = `HTTP ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorBody);
+          message = parsed.message || message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
+
+      return (await response.json()) as T;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 }
 
 export const defaultApiClient = new ApiClient();

@@ -11,6 +11,7 @@ import {
 import { useDashboardViewModel } from '../../viewmodels/useDashboardViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Header } from '../components/Header';
 import { StatCard } from '../components/StatCard';
 import { ApplicationCard } from '../components/ApplicationCard';
@@ -201,7 +202,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 },
               ]}
             >
-              <Text style={[styles.emptyIcon, { fontSize: 36 }]}>📋</Text>
+              <MaterialCommunityIcons
+                name="clipboard-text-outline"
+                size={40}
+                color={colors.textMuted}
+              />
               <Text
                 style={[
                   styles.emptyText,

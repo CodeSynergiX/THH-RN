@@ -11,6 +11,8 @@ import {
 import { useWizardViewModel } from '../../viewmodels/useWizardViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Header } from '../components/Header';
 import { StepIndicator } from '../components/StepIndicator';
 
@@ -69,7 +71,12 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
               },
             ]}
           >
-            <Text style={styles.successIcon}>🎉</Text>
+            <Ionicons
+              name="checkmark-circle"
+              size={56}
+              color={colors.statusResolved}
+              style={{ alignSelf: 'center', marginBottom: 12 }}
+            />
             <Text
               style={[
                 styles.successTitle,
@@ -525,14 +532,24 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                 }
                 style={styles.helperToggleRow}
               >
-                <View style={styles.helperTextWrapper}>
+                <View
+                  style={[
+                    styles.helperTextWrapper,
+                    { flexDirection: 'row', alignItems: 'center' },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="account-group-outline"
+                    size={20}
+                    color={colors.primary}
+                    style={{ marginRight: 6 }}
+                  />
                   <Text
                     style={[
                       styles.helperTitle,
                       { color: colors.text, fontSize: typography.fontSizeSm },
                     ]}
                   >
-                    🤝{' '}
                     {t(
                       'wizard.helper_mode',
                       'Helper Mode (On behalf of another citizen)',
@@ -845,11 +862,12 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                 },
               ]}
             >
-              <Text
-                style={{ fontSize: 32, textAlign: 'center', marginBottom: 8 }}
-              >
-                📎
-              </Text>
+              <Ionicons
+                name="document-attach-outline"
+                size={38}
+                color={colors.textMuted}
+                style={{ textAlign: 'center', marginBottom: 8 }}
+              />
               <Text
                 style={[
                   styles.docNoticeTitle,

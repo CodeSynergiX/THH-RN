@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 
@@ -133,11 +134,11 @@ export const Header: React.FC<HeaderProps> = ({
                 },
               ]}
             >
-              <Text
-                style={[styles.themeIcon, { fontSize: typography.fontSizeSm }]}
-              >
-                {isDark ? '☀️' : '🌙'}
-              </Text>
+              <Ionicons
+                name={isDark ? 'sunny' : 'moon'}
+                size={16}
+                color={colors.primary}
+              />
             </TouchableOpacity>
           )}
         </View>

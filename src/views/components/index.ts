@@ -2,6 +2,8 @@ export * from './ActionButton';
 export * from './ApplicationCard';
 export * from './Header';
 export * from './OfflineBanner';
+export * from './SettingsRow';
+export * from './SettingsSection';
 export * from './StatCard';
 export * from './StatusBadge';
 export * from './StatusCard';

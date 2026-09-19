@@ -11,6 +11,7 @@ import {
 import { useTrackerViewModel } from '../../viewmodels/useTrackerViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Header } from '../components/Header';
 import { StatusBadge } from '../components/StatusBadge';
 import { UrgencyBadge } from '../components/UrgencyBadge';
@@ -351,11 +352,12 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                 },
               ]}
             >
-              <Text
-                style={{ fontSize: 32, textAlign: 'center', marginBottom: 8 }}
-              >
-                🔍
-              </Text>
+              <Ionicons
+                name="search-outline"
+                size={40}
+                color={colors.textMuted}
+                style={{ textAlign: 'center', marginBottom: 8 }}
+              />
               <Text
                 style={[
                   styles.notFoundText,
