@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppTheme } from '../theme/ThemeContext';
 import { useTranslation } from '../i18n/LanguageContext';
-import { DashboardScreen } from './screens/DashboardScreen';
+import { HomeScreen } from './screens/HomeScreen';
+import { CommunityModuleScreen } from './screens/CommunityModuleScreen';
 import { WizardScreen } from './screens/WizardScreen';
 import { CaseTrackerScreen } from './screens/CaseTrackerScreen';
 import { NotificationsScreen } from './screens/NotificationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
-import { Application } from '../models/application.model';
 import { notificationService } from '../services/notificationService';
 
 type TabRoute = 'home' | 'wizard' | 'track' | 'notifications' | 'settings';
@@ -21,6 +21,7 @@ export const MainNavigator: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabRoute>('home');
   const [selectedCaseNo, setSelectedCaseNo] = useState<string | null>(null);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const fetchUnreadCount = useCallback(async () => {
@@ -100,14 +101,23 @@ export const MainNavigator: React.FC = () => {
           { backgroundColor: colors.background },
         ]}
       >
-        {activeTab === 'home' && (
-          <DashboardScreen
-            onNavigateToWizard={navigateToWizard}
-            onNavigateToCase={(app: Application) =>
-              navigateToCaseTracker(app.case_no)
-            }
-          />
-        )}
+        {activeTab === 'home' &&
+          (selectedModule ? (
+            <CommunityModuleScreen
+              moduleKey={selectedModule}
+              onBack={() => setSelectedModule(null)}
+              onNavigateToWizard={() => {
+                setSelectedModule(null);
+                navigateToWizard();
+              }}
+            />
+          ) : (
+            <HomeScreen
+              onSelectModule={key => setSelectedModule(key)}
+              onNavigateToWizard={navigateToWizard}
+              onNavigateToCase={caseNo => navigateToCaseTracker(caseNo)}
+            />
+          ))}
 
         {activeTab === 'wizard' && (
           <WizardScreen
@@ -159,6 +169,9 @@ export const MainNavigator: React.FC = () => {
               onPress={() => {
                 if (tab.key !== 'track') {
                   setSelectedCaseNo(null);
+                }
+                if (tab.key !== 'home') {
+                  setSelectedModule(null);
                 }
                 setActiveTab(tab.key);
                 if (tab.key === 'notifications') {
