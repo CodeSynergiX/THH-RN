@@ -1,8 +1,23 @@
 # THH-RN
 
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+React Native mobile client for THH, structured with strict **Model-View-ViewModel (MVVM)** architecture and integrated code quality hooks.
 
-# Getting Started
+## Architecture (MVVM)
+
+- **Model (`src/models/`, `src/services/`)**: Domain interfaces, entities, API services, and network calls.
+- **ViewModel (`src/viewmodels/`)**: Custom hooks (`use*ViewModel`) containing UI state, business logic, and action handlers. No JSX/UI.
+- **View (`src/views/screens/`, `src/views/components/`)**: Presentation layer consuming ViewModels via clean hooks.
+- **Theme (`src/theme/`)**: Design tokens for colors, spacing, and typography.
+
+## Quality & Verification
+
+- `npm run lint`: Run ESLint on all code.
+- `npm run lint:fix`: Automatically fix ESLint errors.
+- `npm run format:check`: Verify formatting with Prettier.
+- `npm run format:fix`: Format all files with Prettier.
+- `npm run typecheck`: Run TypeScript compilation check (`tsc --noEmit`).
+- `npm run validate`: Run all checks (typecheck, lint, and formatting).
+- **Pre-Push Hook**: Automatically validates the project via `npm run validate` before any `git push`.
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
