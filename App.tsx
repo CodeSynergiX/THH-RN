@@ -1,46 +1,29 @@
 import React from 'react';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import { HomeScreen } from './src/views/screens';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
+import { LanguageProvider } from './src/i18n/LanguageContext';
+import { MainNavigator } from './src/views/MainNavigator';
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+function ThemedApp() {
+  const { isDark } = useAppTheme();
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: safeAreaInsets.top,
-          paddingBottom: safeAreaInsets.bottom,
-          paddingLeft: safeAreaInsets.left,
-          paddingRight: safeAreaInsets.right,
-        },
-      ]}
-    >
-      <HomeScreen />
-    </View>
+    <>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <MainNavigator />
+    </>
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
+export default function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <ThemeProvider>
+        <LanguageProvider>
+          <ThemedApp />
+        </LanguageProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;

@@ -5,7 +5,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import { colors, spacing } from '../../theme';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 interface ActionButtonProps {
   title: string;
@@ -22,8 +22,20 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   variant = 'primary',
   disabled = false,
 }) => {
+  const { theme } = useAppTheme();
+  const { colors, spacing, typography, borderRadius } = theme;
+
   const isPrimary = variant === 'primary';
+  const isSecondary = variant === 'secondary';
   const isOutline = variant === 'outline';
+
+  const bgColor = isPrimary
+    ? colors.primary
+    : isSecondary
+    ? colors.secondary
+    : 'transparent';
+
+  const textColor = isOutline ? colors.primary : colors.textInverse;
 
   return (
     <TouchableOpacity
@@ -32,22 +44,26 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
       disabled={disabled || isLoading}
       style={[
         styles.button,
-        isPrimary && styles.primaryButton,
-        isOutline && styles.outlineButton,
-        disabled && styles.disabledButton,
+        {
+          backgroundColor: disabled ? colors.border : bgColor,
+          borderColor: isOutline ? colors.primary : 'transparent',
+          borderWidth: isOutline ? 1.5 : 0,
+          borderRadius: borderRadius.md,
+          paddingVertical: spacing.md,
+          paddingHorizontal: spacing.lg,
+        },
       ]}
     >
       {isLoading ? (
-        <ActivityIndicator
-          size="small"
-          color={isPrimary ? '#ffffff' : colors.primary}
-        />
+        <ActivityIndicator size="small" color={textColor} />
       ) : (
         <Text
           style={[
             styles.text,
-            isPrimary && styles.primaryText,
-            isOutline && styles.outlineText,
+            {
+              color: disabled ? colors.textMuted : textColor,
+              fontSize: typography.fontSizeBase,
+            },
           ]}
         >
           {title}
@@ -59,32 +75,11 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 48,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    flexDirection: 'row',
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-  },
-  outlineButton: {
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    backgroundColor: 'transparent',
-  },
-  disabledButton: {
-    opacity: 0.6,
+    minHeight: 48,
   },
   text: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  primaryText: {
-    color: '#ffffff',
-  },
-  outlineText: {
-    color: colors.primary,
+    fontWeight: '700',
   },
 });

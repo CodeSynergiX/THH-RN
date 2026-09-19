@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing } from '../../theme';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 interface StatusCardProps {
   title: string;
@@ -15,14 +15,16 @@ export const StatusCard: React.FC<StatusCardProps> = ({
   status,
   subtitle,
   detail,
-  isDarkMode = false,
 }) => {
+  const { theme } = useAppTheme();
+  const { colors, spacing, typography, borderRadius } = theme;
+
   const statusColor =
     status === 'connected'
-      ? colors.success
+      ? colors.statusResolved
       : status === 'checking'
-      ? colors.warning
-      : colors.danger;
+      ? colors.statusAssistance
+      : colors.statusRejected;
 
   const statusLabel =
     status === 'connected'
@@ -36,10 +38,10 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       style={[
         styles.card,
         {
-          backgroundColor: isDarkMode
-            ? colors.surfaceDark
-            : colors.surfaceLight,
-          borderColor: isDarkMode ? colors.borderDark : colors.borderLight,
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: borderRadius.lg,
+          padding: spacing.md,
         },
       ]}
     >
@@ -47,20 +49,28 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         <Text
           style={[
             styles.title,
-            {
-              color: isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            },
+            { color: colors.text, fontSize: typography.fontSizeBase },
           ]}
         >
           {title}
         </Text>
-        <View style={[styles.badge, { backgroundColor: `${statusColor}20` }]}>
-          <View
-            style={[styles.indicatorDot, { backgroundColor: statusColor }]}
-          />
-          <Text style={[styles.badgeText, { color: statusColor }]}>
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor: `${statusColor}20`,
+              borderColor: `${statusColor}40`,
+              borderRadius: borderRadius.full,
+            },
+          ]}
+        >
+          <View style={[styles.dot, { backgroundColor: statusColor }]} />
+          <Text
+            style={[
+              styles.badgeText,
+              { color: statusColor, fontSize: typography.fontSizeXs },
+            ]}
+          >
             {statusLabel}
           </Text>
         </View>
@@ -69,29 +79,31 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       <Text
         style={[
           styles.subtitle,
-          {
-            color: isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          },
+          { color: colors.textMuted, fontSize: typography.fontSizeXs },
         ]}
       >
         {subtitle}
       </Text>
 
       {detail ? (
-        <Text
+        <View
           style={[
-            styles.detail,
+            styles.detailBox,
             {
-              color: isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
+              backgroundColor: colors.surfaceSubtle,
+              borderRadius: borderRadius.sm,
             },
           ]}
         >
-          {detail}
-        </Text>
+          <Text
+            style={[
+              styles.detailText,
+              { color: colors.text, fontSize: typography.fontSizeXs },
+            ]}
+          >
+            {detail}
+          </Text>
+        </View>
       ) : null}
     </View>
   );
@@ -99,50 +111,45 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 14,
-    padding: spacing.md,
     borderWidth: 1,
-    marginVertical: spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowRadius: 2,
+    elevation: 1,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 4,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs - 1,
-    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 1,
   },
-  indicatorDot: {
+  dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: 6,
+    marginRight: 4,
   },
   badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: '800',
   },
   subtitle: {
-    fontSize: 13,
-    marginTop: spacing.sm,
-    lineHeight: 18,
+    lineHeight: 16,
   },
-  detail: {
-    fontSize: 11,
-    marginTop: spacing.xs,
+  detailBox: {
+    marginTop: 8,
+    padding: 6,
+  },
+  detailText: {
+    fontFamily: 'monospace',
   },
 });
