@@ -1,6 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 
@@ -21,7 +30,12 @@ export const Header: React.FC<HeaderProps> = ({
   showThemeToggle = true,
   onBackPress,
 }) => {
-  const { theme, isDark, toggleDarkMode } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const statusBarHeight =
+    Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
+  const topInset = Math.max(insets.top, statusBarHeight);
+
+  const { theme, isDark, toggleDarkMode, logoUrl, brandName } = useAppTheme();
   const { colors, spacing, typography, borderRadius } = theme;
   const { locale, switchLanguage, t } = useTranslation();
 
@@ -37,7 +51,8 @@ export const Header: React.FC<HeaderProps> = ({
           backgroundColor: colors.surface,
           borderBottomColor: colors.border,
           paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
+          paddingTop: topInset + 8,
+          paddingBottom: spacing.sm,
         },
       ]}
     >
@@ -57,19 +72,19 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Text style={[styles.backText, { color: colors.text }]}>←</Text>
             </TouchableOpacity>
+          ) : logoUrl ? (
+            <Image source={{ uri: logoUrl }} style={styles.logoImage} />
           ) : (
             <View
               style={[
                 styles.logoBadge,
                 {
                   backgroundColor: colors.primary,
-                  borderRadius: borderRadius.md,
+                  borderRadius: 14,
                 },
               ]}
             >
-              <Text style={[styles.logoText, { color: colors.textInverse }]}>
-                THH
-              </Text>
+              <View style={styles.logoDot} />
             </View>
           )}
 
@@ -80,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
                 { color: colors.text, fontSize: typography.fontSizeBase },
               ]}
             >
-              {title || t('app.name', 'Tribal Helping Hand')}
+              {title || brandName || t('app.name', 'Tribal Helping Hand')}
             </Text>
             <Text
               style={[
@@ -207,11 +222,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   logoBadge: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    marginRight: 10,
+    backgroundColor: '#fff',
+  },
+  logoDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   logoText: {
     fontWeight: '900',

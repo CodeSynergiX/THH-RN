@@ -18,9 +18,14 @@ export interface WizardFormData {
   districtId: number | null;
   talukaId: number | null;
   villageId: number | null;
+  lat: number | null;
+  lng: number | null;
+  locationAccuracy: string | null;
+  isDetectingLocation: boolean;
   isHelperMode: boolean;
   beneficiaryName: string;
   beneficiaryPhone: string;
+  email: string;
 }
 
 export function useWizardViewModel(initialCategory?: string | number | null) {
@@ -38,13 +43,18 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
     subCategoryId: null,
     title: '',
     description: '',
-    urgency: 'normal',
+    urgency: 'medium',
     districtId: null,
     talukaId: null,
     villageId: null,
+    lat: null,
+    lng: null,
+    locationAccuracy: null,
+    isDetectingLocation: false,
     isHelperMode: false,
     beneficiaryName: '',
     beneficiaryPhone: '',
+    email: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -142,7 +152,7 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
 
   const updateField = useCallback(
     <K extends keyof WizardFormData>(key: K, value: WizardFormData[K]) => {
-      setFormData(prev => ({ ...prev, key: value }));
+      setFormData(prev => ({ ...prev, [key]: value }));
       setErrors(prev => ({ ...prev, [key]: '' }));
     },
     [],
@@ -169,6 +179,9 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
           newErrors.description =
             'ઓછામાં ઓછા ૧૦ અક્ષરોનું વર્ણન લખો (Please describe your requirement in at least 10 characters)';
         }
+        if (!formData.email.trim() || !formData.email.includes('@')) {
+          newErrors.email = 'Email is required to create or match your account';
+        }
         if (formData.isHelperMode) {
           if (!formData.beneficiaryName.trim()) {
             newErrors.beneficiaryName =
@@ -193,6 +206,73 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
     setStep(prev => Math.max(prev - 1, 1));
   }, []);
 
+  const detectLiveLocation = useCallback(async () => {
+    setFormData(prev => ({ ...prev, isDetectingLocation: true }));
+    try {
+      const globalNav = (
+        globalThis as unknown as {
+          navigator?: { geolocation?: { getCurrentPosition: Function } };
+        }
+      ).navigator;
+      if (globalNav && globalNav.geolocation) {
+        globalNav.geolocation.getCurrentPosition(
+          (pos: {
+            coords: { latitude: number; longitude: number; accuracy?: number };
+          }) => {
+            const lat = Number(pos.coords.latitude.toFixed(6));
+            const lng = Number(pos.coords.longitude.toFixed(6));
+            const acc = pos.coords.accuracy
+              ? `±${Math.round(pos.coords.accuracy)}m`
+              : 'GPS High Precision';
+            setFormData(prev => ({
+              ...prev,
+              lat,
+              lng,
+              locationAccuracy: acc,
+              isDetectingLocation: false,
+            }));
+          },
+          (_err: unknown) => {
+            // Default tribal regional GPS center (Dang Ahwa: 20.7532, 73.6841)
+            setFormData(prev => ({
+              ...prev,
+              lat: 20.7532,
+              lng: 73.6841,
+              locationAccuracy: 'Tribal Regional Center (Ahwa)',
+              isDetectingLocation: false,
+            }));
+          },
+          { enableHighAccuracy: true, timeout: 8000 },
+        );
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          lat: 20.7532,
+          lng: 73.6841,
+          locationAccuracy: 'Field Device Pin (Ahwa)',
+          isDetectingLocation: false,
+        }));
+      }
+    } catch {
+      setFormData(prev => ({
+        ...prev,
+        lat: 20.7532,
+        lng: 73.6841,
+        locationAccuracy: 'Field Device Pin',
+        isDetectingLocation: false,
+      }));
+    }
+  }, []);
+
+  const clearCoordinates = useCallback(() => {
+    setFormData(prev => ({
+      ...prev,
+      lat: null,
+      lng: null,
+      locationAccuracy: null,
+    }));
+  }, []);
+
   // Final submission
   const submitApplication = useCallback(async () => {
     if (!validateStep(step)) {
@@ -211,9 +291,14 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
       district_id: formData.districtId,
       taluka_id: formData.talukaId,
       village_id: formData.villageId,
+      lat: formData.lat,
+      lng: formData.lng,
       is_helper_mode: formData.isHelperMode,
       beneficiary_name: formData.beneficiaryName || null,
       beneficiary_phone: formData.beneficiaryPhone || null,
+      email: formData.email || null,
+      name: formData.beneficiaryName || null,
+      phone: formData.beneficiaryPhone || null,
     };
 
     try {
@@ -240,13 +325,18 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
       subCategoryId: null,
       title: '',
       description: '',
-      urgency: 'normal',
+      urgency: 'medium',
       districtId: null,
       talukaId: null,
       villageId: null,
+      lat: null,
+      lng: null,
+      locationAccuracy: null,
+      isDetectingLocation: false,
       isHelperMode: false,
       beneficiaryName: '',
       beneficiaryPhone: '',
+      email: '',
     });
     setErrors({});
     setSubmitSuccess(false);
@@ -272,6 +362,8 @@ export function useWizardViewModel(initialCategory?: string | number | null) {
     selectDistrict,
     selectTaluka,
     selectVillage,
+    detectLiveLocation,
+    clearCoordinates,
     updateField,
     nextStep,
     prevStep,

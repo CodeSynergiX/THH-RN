@@ -9,6 +9,22 @@ export function useTrackerViewModel() {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [otp, setOtp] = useState('');
+  const [needsOtp, setNeedsOtp] = useState(false);
+
+  const requestOtp = useCallback(async () => {
+    const query = caseNoQuery.trim();
+    if (!query) {
+      return;
+    }
+    const res = await applicationService.requestTrackOtp(query);
+    setNeedsOtp(true);
+    setErrorMessage(
+      res.data?.debug_code
+        ? `OTP sent. Demo code: ${res.data.debug_code}`
+        : 'OTP sent to the application email.',
+    );
+  }, [caseNoQuery]);
 
   const searchCase = useCallback(
     async (queryOverride?: string) => {
@@ -23,7 +39,10 @@ export function useTrackerViewModel() {
       setHasSearched(true);
 
       try {
-        const result = await applicationService.trackApplication(query);
+        const result = await applicationService.trackApplication(
+          query,
+          otp || undefined,
+        );
         if (result) {
           setTrackedApplication(result);
           setErrorMessage(null);
@@ -44,7 +63,7 @@ export function useTrackerViewModel() {
         setIsSearching(false);
       }
     },
-    [caseNoQuery],
+    [caseNoQuery, otp],
   );
 
   const clearSearch = useCallback(() => {
@@ -63,5 +82,9 @@ export function useTrackerViewModel() {
     errorMessage,
     searchCase,
     clearSearch,
+    otp,
+    setOtp,
+    needsOtp,
+    requestOtp,
   };
 }

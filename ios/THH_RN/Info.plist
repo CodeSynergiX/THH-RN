@@ -35,7 +35,11 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>THH uses your location to attach a GPS pin when you request help.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>THH uses the microphone so you can speak your help request.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>THH uses your photos to attach supporting documents to a help request.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

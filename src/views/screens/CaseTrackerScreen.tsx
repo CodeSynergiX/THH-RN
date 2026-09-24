@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useTrackerViewModel } from '../../viewmodels/useTrackerViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
@@ -37,6 +38,9 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
     hasSearched,
     errorMessage,
     searchCase,
+    otp,
+    setOtp,
+    requestOtp,
   } = useTrackerViewModel();
 
   useEffect(() => {
@@ -125,6 +129,36 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
             </TouchableOpacity>
           </View>
 
+          <TextInput
+            value={otp}
+            onChangeText={setOtp}
+            placeholder={t('tracker.otp', 'Email OTP (if not logged in)')}
+            placeholderTextColor={colors.textMuted}
+            keyboardType="number-pad"
+            style={[
+              styles.searchInput,
+              {
+                backgroundColor: colors.surfaceSubtle,
+                borderColor: colors.border,
+                color: colors.text,
+                borderRadius: borderRadius.md,
+                padding: spacing.sm,
+                fontSize: typography.fontSizeBase,
+                marginTop: spacing.sm,
+              },
+            ]}
+          />
+          <TouchableOpacity
+            onPress={requestOtp}
+            style={{ marginTop: spacing.sm }}
+          >
+            <Text
+              style={{ color: colors.primary, fontSize: typography.fontSizeSm }}
+            >
+              {t('tracker.sendOtp', 'Send OTP to application email')}
+            </Text>
+          </TouchableOpacity>
+
           {errorMessage && (
             <Text
               style={[
@@ -144,7 +178,6 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
         {/* Search Result */}
         {trackedApplication && (
           <View style={styles.resultContainer}>
-            {/* Case Overview Card */}
             <View
               style={[
                 styles.caseCard,
@@ -154,54 +187,357 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                   borderRadius: borderRadius.lg,
                   padding: spacing.md,
                   marginBottom: spacing.md,
+                  shadowColor: colors.cardShadow,
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 6,
+                  elevation: 3,
                 },
               ]}
             >
+              {/* Header Case ID and Badges */}
               <View style={styles.cardHeader}>
-                <Text
-                  style={[
-                    styles.caseNo,
-                    {
-                      color: colors.primary,
-                      fontSize: typography.fontSizeBase,
-                    },
-                  ]}
-                >
-                  {trackedApplication.case_no}
-                </Text>
+                <View>
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: 10,
+                      textTransform: 'uppercase',
+                      fontWeight: '700',
+                    }}
+                  >
+                    Application ID
+                  </Text>
+                  <Text
+                    style={[
+                      styles.caseNo,
+                      {
+                        color: colors.primary,
+                        fontSize: typography.fontSizeLg,
+                        fontWeight: '900',
+                        fontFamily: 'monospace',
+                      },
+                    ]}
+                  >
+                    {trackedApplication.case_no}
+                  </Text>
+                </View>
                 <StatusBadge status={trackedApplication.status} />
               </View>
 
-              <Text
-                style={[
-                  styles.title,
-                  { color: colors.text, fontSize: typography.fontSizeLg },
-                ]}
-              >
-                {trackedApplication.title}
-              </Text>
+              {/* SLA Deadline Notice if applicable */}
+              {trackedApplication.sla_due_at ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: colors.primary + '12',
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: 4,
+                    borderRadius: borderRadius.sm,
+                    marginVertical: spacing.xs,
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={14}
+                    color={colors.primary}
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: 11,
+                      fontWeight: '700',
+                    }}
+                  >
+                    Target SLA Resolution:{' '}
+                    {new Date(
+                      trackedApplication.sla_due_at,
+                    ).toLocaleDateString()}
+                  </Text>
+                </View>
+              ) : null}
 
-              {trackedApplication.description ? (
+              {/* Title & Category */}
+              <View style={{ marginVertical: spacing.xs }}>
                 <Text
                   style={[
-                    styles.desc,
+                    styles.title,
                     {
-                      color: colors.textMuted,
-                      fontSize: typography.fontSizeSm,
-                      marginVertical: spacing.xs,
+                      color: colors.text,
+                      fontSize: typography.fontSizeLg,
+                      fontWeight: '700',
                     },
                   ]}
                 >
-                  {trackedApplication.description}
+                  {trackedApplication.title}
                 </Text>
+                {trackedApplication.category?.slug ? (
+                  <View
+                    style={{
+                      backgroundColor: colors.surfaceSubtle,
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: borderRadius.sm,
+                      alignSelf: 'flex-start',
+                      marginTop: 4,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontWeight: '600',
+                      }}
+                    >
+                      📁{' '}
+                      {trackedApplication.category.name_gu ||
+                        trackedApplication.category.slug.toUpperCase()}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Problem Description */}
+              {trackedApplication.description ? (
+                <View
+                  style={{
+                    backgroundColor: colors.surfaceSubtle,
+                    padding: spacing.sm,
+                    borderRadius: borderRadius.md,
+                    marginVertical: spacing.xs,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: 10,
+                      textTransform: 'uppercase',
+                      fontWeight: '700',
+                      marginBottom: 2,
+                    }}
+                  >
+                    Requirement Details / વિગત
+                  </Text>
+                  <Text
+                    style={[
+                      styles.desc,
+                      {
+                        color: colors.text,
+                        fontSize: typography.fontSizeSm,
+                        lineHeight: 20,
+                      },
+                    ]}
+                  >
+                    {trackedApplication.description}
+                  </Text>
+                </View>
               ) : null}
 
+              {/* Citizen / Beneficiary Info (if available) */}
+              {(trackedApplication.user?.name ||
+                trackedApplication.beneficiary_name) && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: colors.surfaceSubtle,
+                    padding: spacing.sm,
+                    borderRadius: borderRadius.md,
+                    marginVertical: spacing.xs,
+                  }}
+                >
+                  <Ionicons
+                    name="person-outline"
+                    size={16}
+                    color={colors.primary}
+                    style={{ marginRight: 6 }}
+                  />
+                  <View>
+                    <Text style={{ color: colors.textMuted, fontSize: 10 }}>
+                      Applicant / Beneficiary
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: typography.fontSizeXs,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {trackedApplication.user?.name ||
+                        trackedApplication.beneficiary_name}
+                      {trackedApplication.user?.phone ||
+                      trackedApplication.beneficiary_phone
+                        ? ` · ${
+                            trackedApplication.user?.phone ||
+                            trackedApplication.beneficiary_phone
+                          }`
+                        : ''}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* 📍 Location & Live Location Pin Card */}
+              <View
+                style={{
+                  backgroundColor: trackedApplication.lat
+                    ? colors.secondary + '10'
+                    : colors.surfaceSubtle,
+                  borderColor: trackedApplication.lat
+                    ? colors.secondary
+                    : colors.border,
+                  borderWidth: 1,
+                  borderRadius: borderRadius.md,
+                  padding: spacing.sm,
+                  marginVertical: spacing.xs,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name="location"
+                      size={18}
+                      color={
+                        trackedApplication.lat
+                          ? colors.secondary
+                          : colors.primary
+                      }
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 12,
+                        fontWeight: '700',
+                      }}
+                    >
+                      📍 {t('wizard.village', 'Location & Village')}
+                    </Text>
+                  </View>
+                  {trackedApplication.lat ? (
+                    <View
+                      style={{
+                        backgroundColor: colors.secondary + '20',
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: colors.secondary,
+                          fontSize: 10,
+                          fontWeight: '700',
+                        }}
+                      >
+                        ● GPS PINNED
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: typography.fontSizeSm,
+                    fontWeight: '600',
+                    marginTop: 4,
+                  }}
+                >
+                  {trackedApplication.village?.name_gu ||
+                    trackedApplication.village?.name_en ||
+                    'Dang Region'}
+                  {trackedApplication.taluka?.name_gu ||
+                  trackedApplication.taluka?.name_en
+                    ? `, ${
+                        trackedApplication.taluka?.name_gu ||
+                        trackedApplication.taluka?.name_en
+                      }`
+                    : ''}
+                  {trackedApplication.district?.name_gu ||
+                  trackedApplication.district?.name_en
+                    ? `, ${
+                        trackedApplication.district?.name_gu ||
+                        trackedApplication.district?.name_en
+                      }`
+                    : ''}
+                </Text>
+
+                {trackedApplication.lat && trackedApplication.lng ? (
+                  <View
+                    style={{
+                      marginTop: 6,
+                      paddingTop: 6,
+                      borderTopColor: colors.border,
+                      borderTopWidth: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 11,
+                        fontFamily: 'monospace',
+                        fontWeight: '700',
+                      }}
+                    >
+                      Coordinates: {Number(trackedApplication.lat).toFixed(5)}°
+                      N, {Number(trackedApplication.lng).toFixed(5)}° E
+                    </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() =>
+                        Linking.openURL(
+                          `https://www.google.com/maps?q=${trackedApplication.lat},${trackedApplication.lng}`,
+                        )
+                      }
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: colors.secondary,
+                        paddingHorizontal: spacing.sm,
+                        paddingVertical: 5,
+                        borderRadius: borderRadius.sm,
+                        marginTop: 6,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Ionicons
+                        name="map"
+                        size={13}
+                        color="#ffffff"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text
+                        style={{
+                          color: '#ffffff',
+                          fontSize: 11,
+                          fontWeight: '700',
+                        }}
+                      >
+                        Open Pin in Google Maps / Directions →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Urgency and Submission Date Footer */}
               <View
                 style={[
                   styles.metaRow,
                   {
                     borderTopColor: colors.borderSubtle,
                     paddingTop: spacing.xs,
+                    marginTop: spacing.xs,
                   },
                 ]}
               >
@@ -215,6 +551,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                     },
                   ]}
                 >
+                  Submitted:{' '}
                   {trackedApplication.created_at
                     ? new Date(
                         trackedApplication.created_at,

@@ -9,14 +9,15 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
-  Alert,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useToast } from '../../context/ToastContext';
 import { contentService } from '../../services/contentService';
 import { applicationService } from '../../services/applicationService';
 
@@ -36,7 +37,8 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
 }) => {
   const { theme } = useAppTheme();
   const { colors, typography, borderRadius } = theme;
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { showToast } = useToast();
 
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,6 +53,13 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
   const [reportTitle, setReportTitle] = useState('');
   const [reportCategory, setReportCategory] = useState('water');
   const [reportDescription, setReportDescription] = useState('');
+  const [reportVillageId, setReportVillageId] = useState<number>(1);
+  const [reportLat, setReportLat] = useState<number | null>(null);
+  const [reportLng, setReportLng] = useState<number | null>(null);
+  const [reportLocAccuracy, setReportLocAccuracy] = useState<string | null>(
+    null,
+  );
+  const [isDetectingVillageLoc, setIsDetectingVillageLoc] = useState(false);
 
   const [bloodPatient, setBloodPatient] = useState('');
   const [bloodGroup, setBloodGroup] = useState('O+');
@@ -68,28 +77,37 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
   // Inline Get Help Form state (requested below items)
   const [inlineName, setInlineName] = useState('');
   const [inlinePhone, setInlinePhone] = useState('');
+  const [inlineEmail, setInlineEmail] = useState('');
   const [inlineTitle, setInlineTitle] = useState('');
   const [inlineDesc, setInlineDesc] = useState('');
   const [inlineUrgency, setInlineUrgency] = useState<
-    'normal' | 'urgent' | 'critical'
-  >('normal');
+    'low' | 'medium' | 'urgent'
+  >('medium');
   const [inlineSubmitting, setInlineSubmitting] = useState(false);
   const [inlineSuccessCase, setInlineSuccessCase] = useState<string | null>(
     null,
   );
 
   const handleInlineSubmit = async () => {
-    if (!inlineTitle.trim() || !inlineDesc.trim()) {
-      Alert.alert(
+    if (
+      !inlineTitle.trim() ||
+      !inlineDesc.trim() ||
+      !inlineEmail.includes('@')
+    ) {
+      showToast(
+        t(
+          'common.fill_required',
+          'Please enter name, email, title and description.',
+        ),
+        'warning',
         t('common.required', 'Required'),
-        t('common.fill_required', 'Please enter a title and description.'),
       );
       return;
     }
     setInlineSubmitting(true);
     try {
       const res = await applicationService.createApplication({
-        category_id: 1,
+        module: moduleKey,
         sub_category_id: null,
         title: inlineTitle.trim(),
         description: `Applicant: ${inlineName} (${inlinePhone})\nCategory: ${moduleKey}\n\n${inlineDesc.trim()}`,
@@ -100,19 +118,24 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
         is_helper_mode: false,
         beneficiary_name: inlineName.trim(),
         beneficiary_phone: inlinePhone.trim(),
+        email: inlineEmail.trim(),
+        name: inlineName.trim(),
+        phone: inlinePhone.trim(),
       });
       const caseNumber = res.case_no || (res as any).caseNo || 'THH-APP';
       setInlineSuccessCase(caseNumber);
       setInlineTitle('');
       setInlineDesc('');
-      Alert.alert(
-        t('common.success', 'Request Registered!'),
+      showToast(
         `${t('wizard.case_no_label', 'Your Case Tracking ID:')} ${caseNumber}`,
+        'success',
+        t('common.success', 'Request Registered!'),
       );
     } catch {
-      Alert.alert(
-        t('common.offline_saved', 'Saved Offline'),
+      showToast(
         'Your request has been queued offline and will automatically sync once connected.',
+        'info',
+        t('common.offline_saved', 'Saved Offline'),
       );
     } finally {
       setInlineSubmitting(false);
@@ -207,6 +230,21 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      try {
+        const cms = await contentService.getPublicModule(moduleKey, locale);
+        if (cms.module) {
+          setItems(
+            (cms.items || []).map((row: any) => ({
+              ...row,
+              title: row.title,
+              description: row.excerpt || row.description || '',
+            })),
+          );
+          return;
+        }
+      } catch {
+        // fall back to typed endpoints
+      }
       let res: any[] = [];
       switch (moduleKey) {
         case 'schemes':
@@ -268,7 +306,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
       setLoading(false);
       setRefreshing(false);
     }
-  }, [moduleKey]);
+  }, [moduleKey, locale]);
 
   useEffect(() => {
     fetchData();
@@ -298,11 +336,57 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
     }
   };
 
+  const detectVillageLocation = () => {
+    setIsDetectingVillageLoc(true);
+    try {
+      const globalNav = (
+        globalThis as unknown as {
+          navigator?: { geolocation?: { getCurrentPosition: Function } };
+        }
+      ).navigator;
+      if (globalNav && globalNav.geolocation) {
+        globalNav.geolocation.getCurrentPosition(
+          (pos: {
+            coords: { latitude: number; longitude: number; accuracy?: number };
+          }) => {
+            setReportLat(Number(pos.coords.latitude.toFixed(6)));
+            setReportLng(Number(pos.coords.longitude.toFixed(6)));
+            setReportLocAccuracy(
+              pos.coords.accuracy
+                ? `±${Math.round(pos.coords.accuracy)}m`
+                : 'GPS Accurate',
+            );
+            setIsDetectingVillageLoc(false);
+          },
+          () => {
+            // Default tribal regional GPS center (Dang Ahwa: 20.7532, 73.6841)
+            setReportLat(20.7532);
+            setReportLng(73.6841);
+            setReportLocAccuracy('Tribal Regional Center (Ahwa)');
+            setIsDetectingVillageLoc(false);
+          },
+          { enableHighAccuracy: true, timeout: 8000 },
+        );
+      } else {
+        setReportLat(20.7532);
+        setReportLng(73.6841);
+        setReportLocAccuracy('Field Device Pin (Ahwa)');
+        setIsDetectingVillageLoc(false);
+      }
+    } catch {
+      setReportLat(20.7532);
+      setReportLng(73.6841);
+      setReportLocAccuracy('Field Device Pin');
+      setIsDetectingVillageLoc(false);
+    }
+  };
+
   const submitVillageReportForm = async () => {
     if (!reportTitle.trim() || !reportDescription.trim()) {
-      Alert.alert(
-        'Incomplete',
+      showToast(
         'Please provide a title and problem description.',
+        'warning',
+        'Incomplete',
       );
       return;
     }
@@ -311,20 +395,27 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
       title: reportTitle.trim(),
       category: reportCategory,
       description: reportDescription.trim(),
+      village_id: reportVillageId,
+      lat: reportLat,
+      lng: reportLng,
     });
     setSubmitting(false);
     setModalType(null);
     setReportTitle('');
     setReportDescription('');
-    Alert.alert('Success', res.message);
+    setReportLat(null);
+    setReportLng(null);
+    setReportLocAccuracy(null);
+    showToast(res.message, 'success', 'Success');
     fetchData();
   };
 
   const submitBloodForm = async () => {
     if (!bloodPatient.trim() || !bloodPhone.trim()) {
-      Alert.alert(
-        'Incomplete',
+      showToast(
         'Please provide patient name and contact phone.',
+        'warning',
+        'Incomplete',
       );
       return;
     }
@@ -339,7 +430,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
     setModalType(null);
     setBloodPatient('');
     setBloodPhone('');
-    Alert.alert('Success', res.message);
+    showToast(res.message, 'success', 'Success');
     fetchData();
   };
 
@@ -351,12 +442,16 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
     });
     setSubmitting(false);
     setModalType(null);
-    Alert.alert('Success', res.message);
+    showToast(res.message, 'success', 'Success');
   };
 
   const submitMentorForm = async () => {
     if (!mentorQuestion.trim()) {
-      Alert.alert('Incomplete', 'Please write your question for the mentor.');
+      showToast(
+        'Please write your question for the mentor.',
+        'warning',
+        'Incomplete',
+      );
       return;
     }
     setSubmitting(true);
@@ -364,7 +459,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
     setSubmitting(false);
     setModalType(null);
     setMentorQuestion('');
-    Alert.alert('Success', res.message);
+    showToast(res.message, 'success', 'Success');
   };
 
   const filteredItems = items.filter(item => {
@@ -410,7 +505,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
               styles.headerSubtitle,
               { color: colors.textMuted, fontSize: typography.fontSizeXs },
             ]}
-            numberOfLines={1}
+            numberOfLines={3}
           >
             {meta.subtitle}
           </Text>
@@ -595,6 +690,44 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                         🏘️ {item.village.name}
                       </Text>
                     )}
+                    {item.lat && item.lng && (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          Linking.openURL(
+                            `https://www.google.com/maps?q=${item.lat},${item.lng}`,
+                          )
+                        }
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: colors.secondary + '15',
+                          paddingHorizontal: 8,
+                          paddingVertical: 3,
+                          borderRadius: borderRadius.sm,
+                          marginTop: 4,
+                          alignSelf: 'flex-start',
+                        }}
+                      >
+                        <Ionicons
+                          name="location"
+                          size={12}
+                          color={colors.secondary}
+                          style={{ marginRight: 3 }}
+                        />
+                        <Text
+                          style={{
+                            color: colors.secondary,
+                            fontSize: 11,
+                            fontWeight: '700',
+                            fontFamily: 'monospace',
+                          }}
+                        >
+                          📍 GPS Pin: {Number(item.lat).toFixed(4)}°,{' '}
+                          {Number(item.lng).toFixed(4)}°
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                     {item.status && (
                       <Text
                         style={[
@@ -620,7 +753,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                         fontSize: typography.fontSizeSm,
                       },
                     ]}
-                    numberOfLines={3}
+                    numberOfLines={6}
                   >
                     {detail}
                   </Text>
@@ -806,6 +939,32 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       { color: colors.text, fontSize: typography.fontSizeXs },
                     ]}
                   >
+                    {t('common.email', 'Email *')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.inlineInput,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text,
+                        borderRadius: borderRadius.sm,
+                      },
+                    ]}
+                    placeholder="email@example.com"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={inlineEmail}
+                    onChangeText={setInlineEmail}
+                  />
+
+                  <Text
+                    style={[
+                      styles.inlineLabel,
+                      { color: colors.text, fontSize: typography.fontSizeXs },
+                    ]}
+                  >
                     {t('common.title_subject', 'Request Subject / Title *')}
                   </Text>
                   <TextInput
@@ -852,7 +1011,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                   />
 
                   <View style={styles.urgencyRow}>
-                    {(['normal', 'urgent', 'critical'] as const).map(u => (
+                    {(['low', 'medium', 'urgent'] as const).map(u => (
                       <TouchableOpacity
                         key={u}
                         activeOpacity={0.8}
@@ -944,17 +1103,330 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>
-                Report a Village Problem
-              </Text>
+              <View>
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    { color: colors.text, fontSize: 18, fontWeight: '700' },
+                  ]}
+                >
+                  🚨 {t('module.report_problem', 'Report Village Problem')}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 12,
+                    marginTop: 2,
+                  }}
+                >
+                  ગામ પ્રશ્ન — પાણી, રસ્તા, વીજળી કે શાળાની સમસ્યા નોંધાવો
+                </Text>
+              </View>
               <TouchableOpacity onPress={() => setModalType(null)}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons
+                  name="close-circle"
+                  size={26}
+                  color={colors.textMuted}
+                />
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ maxHeight: 400 }}>
-              <Text style={[styles.inputLabel, { color: colors.text }]}>
-                Problem Title
+            <ScrollView style={{ maxHeight: 440 }}>
+              {/* Category selector */}
+              <Text
+                style={[
+                  styles.inputLabel,
+                  { color: colors.text, marginTop: 8 },
+                ]}
+              >
+                {t('module.problem_category', 'Problem Category (કેટેગરી)')} *
+              </Text>
+              <View
+                style={[styles.categoryChips, { flexWrap: 'wrap', gap: 6 }]}
+              >
+                {[
+                  { key: 'water', label: '💧 Water / પાણી', color: '#0284C7' },
+                  { key: 'road', label: '🛣️ Road / રસ્તા', color: '#D97706' },
+                  {
+                    key: 'electricity',
+                    label: '⚡ Power / વીજળી',
+                    color: '#EAB308',
+                  },
+                  {
+                    key: 'school',
+                    label: '🏫 School / શાળા',
+                    color: '#7C3AED',
+                  },
+                  {
+                    key: 'sanitation',
+                    label: '🧹 Cleanliness / સ્વચ્છતા',
+                    color: '#059669',
+                  },
+                  {
+                    key: 'health',
+                    label: '🏥 Health / આરોગ્ય',
+                    color: '#E11D48',
+                  },
+                ].map(cat => (
+                  <TouchableOpacity
+                    key={cat.key}
+                    onPress={() => setReportCategory(cat.key)}
+                    style={[
+                      styles.chip,
+                      {
+                        borderColor:
+                          reportCategory === cat.key
+                            ? cat.color
+                            : colors.border,
+                        backgroundColor:
+                          reportCategory === cat.key
+                            ? cat.color + '20'
+                            : colors.surfaceSubtle,
+                        borderWidth: reportCategory === cat.key ? 1.5 : 1,
+                        paddingVertical: 6,
+                        paddingHorizontal: 10,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          reportCategory === cat.key ? cat.color : colors.text,
+                        fontSize: 12,
+                        fontWeight: reportCategory === cat.key ? '700' : '500',
+                      }}
+                    >
+                      {cat.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Village Selector */}
+              <Text
+                style={[
+                  styles.inputLabel,
+                  { color: colors.text, marginTop: 12 },
+                ]}
+              >
+                {t('wizard.village', 'Village (ગામ)')} *
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginVertical: 4 }}
+              >
+                {[
+                  { id: 1, name: 'Ahwa (આહવા)' },
+                  { id: 2, name: 'Subir (સુબીર)' },
+                  { id: 3, name: 'Waghai (વઘઈ)' },
+                  { id: 4, name: 'Saputara (સાપુતારા)' },
+                  { id: 5, name: 'Gadhvi (ગઢવી)' },
+                  { id: 6, name: 'Shamgahan (શામગહાન)' },
+                ].map(v => {
+                  const isSel = reportVillageId === v.id;
+                  return (
+                    <TouchableOpacity
+                      key={v.id}
+                      onPress={() => setReportVillageId(v.id)}
+                      style={{
+                        backgroundColor: isSel
+                          ? colors.primary
+                          : colors.surfaceSubtle,
+                        borderColor: isSel ? colors.primary : colors.border,
+                        borderWidth: 1,
+                        borderRadius: borderRadius.md,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        marginRight: 6,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: isSel ? colors.textInverse : colors.text,
+                          fontSize: 12,
+                          fontWeight: isSel ? '700' : '500',
+                        }}
+                      >
+                        {v.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Live Location Pin (GPS) */}
+              <View
+                style={{
+                  marginTop: 12,
+                  marginBottom: 8,
+                  backgroundColor: reportLat
+                    ? colors.secondary + '10'
+                    : colors.surfaceSubtle,
+                  borderColor: reportLat ? colors.secondary : colors.border,
+                  borderWidth: 1,
+                  borderRadius: borderRadius.md,
+                  padding: 12,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name="location"
+                      size={18}
+                      color={reportLat ? colors.secondary : colors.primary}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 13,
+                        fontWeight: '700',
+                      }}
+                    >
+                      📍 {t('wizard.live_pin_title', 'Live Location Pin (GPS)')}
+                    </Text>
+                  </View>
+                  {reportLat ? (
+                    <View
+                      style={{
+                        backgroundColor: colors.secondary + '25',
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: colors.secondary,
+                          fontSize: 10,
+                          fontWeight: '700',
+                        }}
+                      >
+                        ● PINNED
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                {reportLat && reportLng ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      paddingTop: 6,
+                      borderTopColor: colors.border,
+                      borderTopWidth: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 12,
+                        fontWeight: '700',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      GPS: {reportLat.toFixed(5)}° N, {reportLng.toFixed(5)}° E
+                    </Text>
+                    {reportLocAccuracy ? (
+                      <Text
+                        style={{
+                          color: colors.textMuted,
+                          fontSize: 11,
+                          marginTop: 2,
+                        }}
+                      >
+                        Accuracy: {reportLocAccuracy}
+                      </Text>
+                    ) : null}
+                    <TouchableOpacity
+                      onPress={() => {
+                        setReportLat(null);
+                        setReportLng(null);
+                        setReportLocAccuracy(null);
+                      }}
+                      style={{ marginTop: 4, alignSelf: 'flex-start' }}
+                    >
+                      <Text
+                        style={{ color: colors.statusRejected, fontSize: 11 }}
+                      >
+                        Clear Pin
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: 11,
+                      marginTop: 4,
+                    }}
+                  >
+                    Tap below to pin exact coordinates of the broken pipe,
+                    pothole or pole.
+                  </Text>
+                )}
+
+                <TouchableOpacity
+                  onPress={detectVillageLocation}
+                  disabled={isDetectingVillageLoc}
+                  style={{
+                    marginTop: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: reportLat
+                      ? colors.surface
+                      : colors.primary,
+                    borderColor: reportLat ? colors.secondary : colors.primary,
+                    borderWidth: 1,
+                    borderRadius: borderRadius.sm,
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                  }}
+                >
+                  {isDetectingVillageLoc ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={reportLat ? colors.primary : '#ffffff'}
+                    />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name={reportLat ? 'refresh' : 'navigate'}
+                        size={15}
+                        color={reportLat ? colors.text : '#ffffff'}
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text
+                        style={{
+                          color: reportLat ? colors.text : '#ffffff',
+                          fontSize: 12,
+                          fontWeight: '700',
+                        }}
+                      >
+                        {reportLat
+                          ? 'Update Location Pin'
+                          : '📍 Drop Live Location Pin'}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <Text
+                style={[
+                  styles.inputLabel,
+                  { color: colors.text, marginTop: 8 },
+                ]}
+              >
+                {t('common.title_subject', 'Problem Title (વિષય)')} *
               </Text>
               <TextInput
                 style={[
@@ -965,47 +1437,14 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                     borderColor: colors.border,
                   },
                 ]}
-                placeholder="e.g. Drinking water well contaminated"
+                placeholder="e.g. Drinking water handpump broken near primary school"
                 placeholderTextColor={colors.textMuted}
                 value={reportTitle}
                 onChangeText={setReportTitle}
               />
 
               <Text style={[styles.inputLabel, { color: colors.text }]}>
-                Category
-              </Text>
-              <View style={styles.categoryChips}>
-                {['water', 'road', 'electricity', 'school', 'sanitation'].map(
-                  cat => (
-                    <TouchableOpacity
-                      key={cat}
-                      onPress={() => setReportCategory(cat)}
-                      style={[
-                        styles.chip,
-                        { borderColor: colors.border },
-                        reportCategory === cat && {
-                          backgroundColor: colors.primary,
-                          borderColor: colors.primary,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            reportCategory === cat ? '#ffffff' : colors.text,
-                          fontSize: 12,
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {cat}
-                      </Text>
-                    </TouchableOpacity>
-                  ),
-                )}
-              </View>
-
-              <Text style={[styles.inputLabel, { color: colors.text }]}>
-                Description & Location
+                {t('common.description', 'Problem Description & Details')} *
               </Text>
               <TextInput
                 style={[
@@ -1017,7 +1456,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                     borderColor: colors.border,
                   },
                 ]}
-                placeholder="Explain the problem and exact location in the village..."
+                placeholder="Explain what is damaged, how many families affected, and landmark..."
                 placeholderTextColor={colors.textMuted}
                 multiline
                 numberOfLines={4}

@@ -5,12 +5,22 @@ export type ApplicationStatus =
   | 'assigned'
   | 'assistance'
   | 'follow_up'
+  | 'followUp'
+  | 'awaiting_confirmation'
   | 'resolved'
+  | 'solved'
+  | 'field_visit_completed'
+  | 'in_verification'
+  | 'awaiting_docs'
+  | 'approved'
+  | 'closed'
   | 'rejected'
   | 'on_hold'
-  | 'reopened';
+  | 'onHold'
+  | 'reopened'
+  | 'needMoreInfo';
 
-export type ApplicationUrgency = 'normal' | 'urgent' | 'critical';
+export type ApplicationUrgency = 'low' | 'medium' | 'urgent';
 export type ApplicationPriority = 'low' | 'medium' | 'high';
 
 export interface TimelineEvent {
@@ -37,11 +47,23 @@ export interface ApplicationDocument {
   is_verified?: boolean;
 }
 
+export interface WorkflowStage {
+  key: string;
+  name_en: string;
+  name_gu: string;
+  headline_en?: string;
+  headline_gu?: string;
+  desc_en?: string;
+  desc_gu?: string;
+  icon?: string;
+}
+
 export interface Application {
   id: number;
   case_no: string;
   title: string;
   description: string;
+  module?: string;
   status: ApplicationStatus;
   urgency: ApplicationUrgency;
   priority: ApplicationPriority;
@@ -69,16 +91,39 @@ export interface Application {
     name_en: string;
     name_gu: string;
   };
+  lat?: number | null;
+  lng?: number | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  beneficiary_name?: string | null;
+  beneficiary_phone?: string | null;
+  user?: {
+    id?: number;
+    name?: string;
+    phone?: string;
+    email?: string;
+  };
+  current_assignee?: {
+    id: number;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    role?: string | null;
+    helper_status?: string | null;
+  } | null;
   sla_due_at?: string | null;
   resolved_at?: string | null;
   created_at: string;
   updated_at: string;
   timeline_events?: TimelineEvent[];
+  timeline?: TimelineEvent[];
   documents?: ApplicationDocument[];
+  workflow_stages?: WorkflowStage[];
 }
 
 export interface CreateApplicationPayload {
-  category_id: number;
+  category_id?: number;
+  module?: string;
   sub_category_id?: number | null;
   title: string;
   description: string;
@@ -92,5 +137,14 @@ export interface CreateApplicationPayload {
   is_helper_mode?: boolean;
   beneficiary_name?: string | null;
   beneficiary_phone?: string | null;
+  email?: string | null;
+  name?: string | null;
+  phone?: string | null;
   idempotency_key?: string;
+  documents?: Array<{
+    document_type: string;
+    file_path: string;
+    original_name?: string;
+    mime_type?: string;
+  }>;
 }

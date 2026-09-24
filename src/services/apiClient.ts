@@ -12,13 +12,16 @@ const AUTH_TOKEN_KEY = '@thh_auth_token';
 // Automatically detect emulator vs host
 const getDefaultBaseUrl = () => {
   if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000/api/v1';
+    return 'https://containing-substance-competitive-bias.trycloudflare.com/api/v1';
+    // return 'https://thhapi.codesynergix.com/api/v1';
   }
-  return 'http://localhost:8000/api/v1';
+  return 'https://containing-substance-competitive-bias.trycloudflare.com/api/v1';
+  // return 'https://thhapi.codesynergix.com/api/v1';
 };
 
 export class ApiClient {
   private baseUrl: string;
+  private tokenCache: string | null = null;
 
   constructor(baseUrl: string = getDefaultBaseUrl()) {
     this.baseUrl = baseUrl;
@@ -33,14 +36,19 @@ export class ApiClient {
   }
 
   async getAuthToken(): Promise<string | null> {
+    if (this.tokenCache !== null) {
+      return this.tokenCache;
+    }
     try {
-      return await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      this.tokenCache = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      return this.tokenCache;
     } catch {
       return null;
     }
   }
 
   async setAuthToken(token: string): Promise<void> {
+    this.tokenCache = token;
     try {
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
     } catch (err) {
@@ -49,6 +57,7 @@ export class ApiClient {
   }
 
   async clearAuthToken(): Promise<void> {
+    this.tokenCache = null;
     try {
       await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
     } catch (err) {
@@ -73,28 +82,39 @@ export class ApiClient {
   }
 
   async get<T>(path: string, options?: RequestOptions): Promise<T> {
-    const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      options?.timeoutMs ?? 12000,
-    );
+    const doFetch = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(
+        () => controller.abort(),
+        options?.timeoutMs ?? 15000,
+      );
+
+      try {
+        const headers = await this.prepareHeaders(options);
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        const response = await fetch(`${this.baseUrl}${cleanPath}`, {
+          method: 'GET',
+          headers,
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return (await response.json()) as T;
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
 
     try {
-      const headers = await this.prepareHeaders(options);
-      const cleanPath = path.startsWith('/') ? path : `/${path}`;
-      const response = await fetch(`${this.baseUrl}${cleanPath}`, {
-        method: 'GET',
-        headers,
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return (await response.json()) as T;
-    } finally {
-      clearTimeout(timeout);
+      return await doFetch();
+    } catch (firstErr) {
+      // Automatic 1-retry with backoff for transient glitches / busy php server
+      console.log('firstErr', firstErr);
+      await new Promise(resolve => setTimeout(() => resolve(undefined), 350));
+      return await doFetch();
     }
   }
 
@@ -169,6 +189,43 @@ export class ApiClient {
         throw new Error(message);
       }
 
+      return (await response.json()) as T;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async postForm<T>(
+    path: string,
+    form: FormData,
+    options?: RequestOptions,
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      options?.timeoutMs ?? 30000,
+    );
+    try {
+      const headers = await this.prepareHeaders(options);
+      delete headers['Content-Type'];
+      const cleanPath = path.startsWith('/') ? path : `/${path}`;
+      const response = await fetch(`${this.baseUrl}${cleanPath}`, {
+        method: 'POST',
+        headers,
+        body: form,
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const errorBody = await response.text();
+        let message = `HTTP ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorBody);
+          message = parsed.message || message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
       return (await response.json()) as T;
     } finally {
       clearTimeout(timeout);

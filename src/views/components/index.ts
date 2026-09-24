@@ -9,3 +9,5 @@ export * from './StatusBadge';
 export * from './StatusCard';
 export * from './StepIndicator';
 export * from './UrgencyBadge';
+export * from './CanopyHeader';
+export * from './ArchedTimelineDial';

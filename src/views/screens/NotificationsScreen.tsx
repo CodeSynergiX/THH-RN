@@ -21,11 +21,13 @@ import {
 interface NotificationsScreenProps {
   onBack?: () => void;
   onNavigateToCase?: (caseNo: string) => void;
+  isLoggedIn?: boolean;
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   onBack,
   onNavigateToCase,
+  isLoggedIn = false,
 }) => {
   const { theme } = useAppTheme();
   const { colors, typography } = theme;
@@ -47,49 +49,53 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         }
       }
     } catch {
-      // Fallback offline mock notifications if network fails
-      setNotifications(prev =>
-        prev.length > 0
-          ? prev
-          : [
-              {
-                id: 1,
-                type: 'case_status_change',
-                title: 'Case Status Updated',
-                body: 'Your case THH-2026-00001 has been moved to Verification stage.',
-                data: { case_no: 'THH-2026-00001' },
-                status: 'delivered',
-                read_at: null,
-                created_at: new Date().toISOString(),
-              },
-              {
-                id: 2,
-                type: 'assignment',
-                title: 'Officer Assigned',
-                body: 'Field Officer Ramesh Patel has been assigned to your request.',
-                data: { case_no: 'THH-2026-00001' },
-                status: 'sent',
-                read_at: null,
-                created_at: new Date(Date.now() - 3600000).toISOString(),
-              },
-              {
-                id: 3,
-                type: 'general',
-                title: 'Welcome to Tribal Helping Hand',
-                body: 'Empowering tribal communities with fast government scheme access.',
-                data: null,
-                status: 'opened',
-                read_at: new Date(Date.now() - 86400000).toISOString(),
-                created_at: new Date(Date.now() - 86400000).toISOString(),
-              },
-            ],
-      );
-      setUnreadCount(2);
+      if (isLoggedIn) {
+        setNotifications([]);
+        setUnreadCount(0);
+      } else {
+        setNotifications(prev =>
+          prev.length > 0
+            ? prev
+            : [
+                {
+                  id: 1,
+                  type: 'case_status_change',
+                  title: 'Case Status Updated',
+                  body: 'Your case THH-2026-00001 has been moved to Verification stage.',
+                  data: { case_no: 'THH-2026-00001' },
+                  status: 'delivered',
+                  read_at: null,
+                  created_at: new Date().toISOString(),
+                },
+                {
+                  id: 2,
+                  type: 'assignment',
+                  title: 'Officer Assigned',
+                  body: 'Field Officer Ramesh Patel has been assigned to your request.',
+                  data: { case_no: 'THH-2026-00001' },
+                  status: 'sent',
+                  read_at: null,
+                  created_at: new Date(Date.now() - 3600000).toISOString(),
+                },
+                {
+                  id: 3,
+                  type: 'general',
+                  title: 'Welcome to Tribal Helping Hand',
+                  body: 'Empowering tribal communities with fast government scheme access.',
+                  data: null,
+                  status: 'opened',
+                  read_at: new Date(Date.now() - 86400000).toISOString(),
+                  created_at: new Date(Date.now() - 86400000).toISOString(),
+                },
+              ],
+        );
+        setUnreadCount(2);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     fetchNotifications();

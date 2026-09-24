@@ -22,6 +22,13 @@ export interface ColorTokens {
   statusRejected: string;
   statusOnHold: string;
   cardShadow: string;
+  primaryContainer?: string;
+  onPrimaryContainer?: string;
+  secondaryContainer?: string;
+  onSecondaryContainer?: string;
+  error?: string;
+  errorContainer?: string;
+  onErrorContainer?: string;
 }
 
 export interface SpacingTokens {
@@ -34,6 +41,8 @@ export interface SpacingTokens {
 }
 
 export interface TypographyTokens {
+  fontFamilySans: string;
+  fontFamilySerif: string;
   fontSizeXs: number;
   fontSizeSm: number;
   fontSizeBase: number;

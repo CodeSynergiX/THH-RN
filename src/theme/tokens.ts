@@ -6,55 +6,69 @@ import {
 } from '../models/theme.model';
 
 export const lightColors: ColorTokens = {
-  primary: '#B45309', // Warm Ochre (tribal earth)
-  primaryLight: '#D97706',
-  primaryDark: '#78350F',
-  secondary: '#15803D', // Forest Green (nature, leaves)
-  secondaryLight: '#16A34A',
-  secondaryDark: '#14532D',
-  accent: '#C2410C', // Terracotta Clay
-  background: '#FFFBEB', // Warm light cream
-  surface: '#FFFFFF',
-  surfaceSubtle: '#FEF3C7',
-  text: '#1C1917', // Deep slate/brown
-  textMuted: '#78716C',
-  textInverse: '#FFFFFF',
-  border: '#E7E5E4',
-  borderSubtle: '#F5F5F4',
-  statusReceived: '#4F46E5', // Indigo
-  statusVerification: '#9333EA', // Purple
-  statusCategorised: '#2563EB', // Blue
-  statusAssistance: '#D97706', // Amber
-  statusResolved: '#16A34A', // Green
-  statusRejected: '#E11D48', // Rose
-  statusOnHold: '#6B7280', // Gray
-  cardShadow: 'rgba(28, 25, 23, 0.08)',
+  primary: '#006026',
+  primaryLight: '#1b7a38',
+  primaryDark: '#005320',
+  secondary: '#79573c',
+  secondaryLight: '#eabe9c',
+  secondaryDark: '#5f4027',
+  accent: '#1b7a38',
+  background: '#fff8f5',
+  surface: '#ffffff',
+  surfaceSubtle: '#fff1ea',
+  text: '#2a170b',
+  textMuted: '#3f493f',
+  textInverse: '#ffffff',
+  border: '#bfcabb',
+  borderSubtle: '#ffeadf',
+  statusReceived: '#2563EB',
+  statusVerification: '#7C3AED',
+  statusCategorised: '#4F46E5',
+  statusAssistance: '#D97706',
+  statusResolved: '#006026',
+  statusRejected: '#ba1a1a',
+  statusOnHold: '#6f7a6e',
+  cardShadow: 'rgba(27, 122, 56, 0.08)',
+  primaryContainer: '#1b7a38',
+  onPrimaryContainer: '#ffffff',
+  secondaryContainer: '#ffd1af',
+  onSecondaryContainer: '#7a583d',
+  error: '#ba1a1a',
+  errorContainer: '#ffdad6',
+  onErrorContainer: '#93000a',
 };
 
 export const darkColors: ColorTokens = {
-  primary: '#F59E0B', // Bright Amber for dark mode
-  primaryLight: '#FBBF24',
-  primaryDark: '#B45309',
-  secondary: '#22C55E', // Vivid Forest Green
-  secondaryLight: '#4ADE80',
-  secondaryDark: '#15803D',
-  accent: '#EA580C',
-  background: '#0F172A', // Slate dark
-  surface: '#1E293B',
-  surfaceSubtle: '#334155',
-  text: '#F8FAFC',
-  textMuted: '#94A3B8',
-  textInverse: '#0F172A',
-  border: '#334155',
-  borderSubtle: '#1E293B',
-  statusReceived: '#818CF8',
-  statusVerification: '#C084FC',
-  statusCategorised: '#60A5FA',
+  primary: '#7fda8c',
+  primaryLight: '#9bf7a6',
+  primaryDark: '#005320',
+  secondary: '#eabe9c',
+  secondaryLight: '#ffdcc3',
+  secondaryDark: '#79573c',
+  accent: '#9bf7a6',
+  background: '#1a110c',
+  surface: '#25180f',
+  surfaceSubtle: '#412c1f',
+  text: '#ffede5',
+  textMuted: '#bfcabb',
+  textInverse: '#002109',
+  border: '#412c1f',
+  borderSubtle: '#2d1602',
+  statusReceived: '#60A5FA',
+  statusVerification: '#A78BFA',
+  statusCategorised: '#818CF8',
   statusAssistance: '#FBBF24',
-  statusResolved: '#4ADE80',
-  statusRejected: '#FB7185',
+  statusResolved: '#7fda8c',
+  statusRejected: '#F87171',
   statusOnHold: '#9CA3AF',
   cardShadow: 'rgba(0, 0, 0, 0.4)',
+  primaryContainer: '#005320',
+  onPrimaryContainer: '#abffb3',
+  secondaryContainer: '#5f4027',
+  onSecondaryContainer: '#ffd1af',
+  error: '#ffb4ab',
+  errorContainer: '#93000a',
+  onErrorContainer: '#ffdad6',
 };
 
 export const spacingTokens: SpacingTokens = {
@@ -67,11 +81,13 @@ export const spacingTokens: SpacingTokens = {
 };
 
 export const typographyTokens: TypographyTokens = {
-  fontSizeXs: 11,
-  fontSizeSm: 13,
-  fontSizeBase: 15,
-  fontSizeLg: 17,
-  fontSizeXl: 20,
+  fontFamilySans: 'Plus Jakarta Sans',
+  fontFamilySerif: 'Plus Jakarta Sans',
+  fontSizeXs: 12,
+  fontSizeSm: 14,
+  fontSizeBase: 16,
+  fontSizeLg: 18,
+  fontSizeXl: 22,
   fontSizeXxl: 26,
   fontWeightNormal: '400',
   fontWeightMedium: '500',
@@ -80,12 +96,112 @@ export const typographyTokens: TypographyTokens = {
 };
 
 export const defaultBorderRadius = {
-  sm: 6,
-  md: 10,
+  sm: 8,
+  md: 12,
   lg: 16,
   xl: 24,
   full: 9999,
 };
+
+export function mapServerTokens(
+  raw?: Record<string, string> | null,
+): Partial<ColorTokens> {
+  if (!raw) {
+    return {};
+  }
+  const mapped: Partial<ColorTokens> = {};
+  if (raw.primary) {
+    mapped.primary = raw.primary;
+  }
+  if (raw.primary_light || raw.primaryLight) {
+    mapped.primaryLight = raw.primary_light || raw.primaryLight;
+  } else if (raw.primary) {
+    mapped.primaryLight = raw.accent || raw.primary;
+  }
+  if (raw.primary_dark || raw.primaryDark) {
+    mapped.primaryDark = raw.primary_dark || raw.primaryDark;
+  }
+  if (raw.primary_container || raw.primaryContainer) {
+    mapped.primaryContainer = raw.primary_container || raw.primaryContainer;
+  } else if (raw.accent || raw.primary) {
+    mapped.primaryContainer = raw.accent || raw.primary;
+  }
+  if (raw.on_primary_container || raw.onPrimaryContainer) {
+    mapped.onPrimaryContainer =
+      raw.on_primary_container || raw.onPrimaryContainer;
+  }
+  if (raw.secondary) {
+    mapped.secondary = raw.secondary;
+  }
+  if (raw.secondary_light || raw.secondaryLight) {
+    mapped.secondaryLight = raw.secondary_light || raw.secondaryLight;
+  }
+  if (raw.secondary_dark || raw.secondaryDark) {
+    mapped.secondaryDark = raw.secondary_dark || raw.secondaryDark;
+  }
+  if (raw.secondary_container || raw.secondaryContainer) {
+    mapped.secondaryContainer =
+      raw.secondary_container || raw.secondaryContainer;
+  }
+  if (raw.on_secondary_container || raw.onSecondaryContainer) {
+    mapped.onSecondaryContainer =
+      raw.on_secondary_container || raw.onSecondaryContainer;
+  }
+  if (raw.accent) {
+    mapped.accent = raw.accent;
+  }
+  if (raw.bg || raw.background) {
+    mapped.background = raw.bg || raw.background;
+  }
+  if (raw.surface) {
+    mapped.surface = raw.surface;
+  }
+  if (raw.surface_subtle || raw.surfaceSubtle) {
+    mapped.surfaceSubtle = raw.surface_subtle || raw.surfaceSubtle;
+  } else if (raw.surface) {
+    mapped.surfaceSubtle = raw.surface;
+  }
+  if (raw.text) {
+    mapped.text = raw.text;
+  }
+  if (raw.text_muted || raw.textMuted) {
+    mapped.textMuted = raw.text_muted || raw.textMuted;
+  }
+  if (raw.text_inverse || raw.textInverse) {
+    mapped.textInverse = raw.text_inverse || raw.textInverse;
+  }
+  if (raw.border) {
+    mapped.border = raw.border;
+  }
+  if (raw.border_subtle || raw.borderSubtle) {
+    mapped.borderSubtle = raw.border_subtle || raw.borderSubtle;
+  } else if (raw.border) {
+    mapped.borderSubtle = raw.border;
+  }
+  if (raw.status_received || raw.statusReceived) {
+    mapped.statusReceived = raw.status_received || raw.statusReceived;
+  }
+  if (raw.status_verification || raw.statusVerification) {
+    mapped.statusVerification =
+      raw.status_verification || raw.statusVerification;
+  }
+  if (raw.status_categorised || raw.statusCategorised) {
+    mapped.statusCategorised = raw.status_categorised || raw.statusCategorised;
+  }
+  if (raw.status_assistance || raw.statusAssistance) {
+    mapped.statusAssistance = raw.status_assistance || raw.statusAssistance;
+  }
+  if (raw.status_resolved || raw.statusResolved) {
+    mapped.statusResolved = raw.status_resolved || raw.statusResolved;
+  }
+  if (raw.status_rejected || raw.statusRejected) {
+    mapped.statusRejected = raw.status_rejected || raw.statusRejected;
+  }
+  if (raw.status_onhold || raw.statusOnHold) {
+    mapped.statusOnHold = raw.status_onhold || raw.statusOnHold;
+  }
+  return mapped;
+}
 
 export function createTheme(
   isDark: boolean,
@@ -102,20 +218,20 @@ export function createTheme(
 }
 
 export const colors = {
-  primary: '#B45309',
-  success: '#16A34A',
+  primary: '#006026',
+  success: '#006026',
   warning: '#D97706',
-  danger: '#E11D48',
-  textPrimaryLight: '#1C1917',
-  textPrimaryDark: '#F8FAFC',
-  textSecondaryLight: '#78716C',
-  textSecondaryDark: '#94A3B8',
-  surfaceLight: '#FFFFFF',
-  surfaceDark: '#1E293B',
-  borderLight: '#E7E5E4',
-  borderDark: '#334155',
-  backgroundLight: '#FFFBEB',
-  backgroundDark: '#0F172A',
+  danger: '#ba1a1a',
+  textPrimaryLight: '#2a170b',
+  textPrimaryDark: '#ffede5',
+  textSecondaryLight: '#3f493f',
+  textSecondaryDark: '#bfcabb',
+  surfaceLight: '#ffffff',
+  surfaceDark: '#25180f',
+  borderLight: '#bfcabb',
+  borderDark: '#412c1f',
+  backgroundLight: '#fff8f5',
+  backgroundDark: '#1a110c',
 };
 
 export const spacing = spacingTokens;

@@ -90,7 +90,10 @@ export interface VillageReportItem {
   category: string;
   description: string;
   status: string;
-  village?: { name: string };
+  village?: { name?: string; name_en?: string; name_gu?: string };
+  lat?: number | null;
+  lng?: number | null;
+  urgency?: string;
   created_at: string;
 }
 
@@ -113,6 +116,21 @@ export interface BusinessIdeaItem {
 }
 
 export const contentService = {
+  async getPublicModule(slug: string, locale = 'en') {
+    const res = await defaultApiClient.get<{
+      success: boolean;
+      data: {
+        module: { slug: string; title: string; description: string };
+        items: { data?: any[] } | any[];
+      };
+    }>(`/config/modules/${slug}?locale=${locale}`);
+    const items = res.data?.items;
+    return {
+      module: res.data?.module,
+      items: Array.isArray(items) ? items : items?.data ?? [],
+    };
+  },
+
   // ─── Schemes ──────────────────────────────────────────────────────────
   async getSchemes(): Promise<SchemeItem[]> {
     try {
@@ -137,7 +155,7 @@ export const contentService = {
             '₹1,20,000 grant for pucca house construction in tribal villages.',
         },
         required_documents: [
-          'Aadhaar Card',
+          'Identity Proof',
           'BPL Ration Card',
           'Job Card',
           'Bank Passbook',
@@ -160,7 +178,7 @@ export const contentService = {
         required_documents: [
           '7/12 & 8-A Land Record',
           'ST Certificate',
-          'Aadhaar Card',
+          'Identity Proof',
         ],
         process_steps: [
           'Application at Taluka Agri Office',
@@ -177,8 +195,8 @@ export const contentService = {
           benefit:
             'Cashless hospital treatment up to ₹10,00,000 per family per year.',
         },
-        required_documents: ['Aadhaar Card', 'Ration Card'],
-        process_steps: ['e-KYC at CSC center', 'PVC golden card issue'],
+        required_documents: ['Identity Proof', 'Ration Card'],
+        process_steps: ['Verification at CSC center', 'PVC golden card issue'],
       },
     ];
   },
@@ -385,6 +403,8 @@ export const contentService = {
     category: string;
     description: string;
     village_id?: number;
+    lat?: number | null;
+    lng?: number | null;
   }): Promise<{ success: boolean; message: string }> {
     try {
       await defaultApiClient.post('/village-reports', {

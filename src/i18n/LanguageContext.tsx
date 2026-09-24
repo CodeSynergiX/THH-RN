@@ -11,12 +11,14 @@ type SupportedLocale = 'gu' | 'en';
 
 interface LanguageContextType {
   locale: SupportedLocale;
+  language: SupportedLocale;
   t: (
     key: string,
     fallback?: string,
     params?: Record<string, string | number>,
   ) => string;
   switchLanguage: (newLocale: SupportedLocale) => Promise<void>;
+  setLanguage: (newLocale: SupportedLocale) => Promise<void>;
   supportedLocales: Array<{
     code: SupportedLocale;
     label: string;
@@ -30,8 +32,10 @@ const TRANSLATIONS_CACHE_PREFIX = '@thh_trans_cache_';
 
 const LanguageContext = createContext<LanguageContextType>({
   locale: 'gu',
+  language: 'gu',
   t: (_key, fallback) => fallback || _key,
   switchLanguage: async () => {},
+  setLanguage: async () => {},
   supportedLocales: [
     { code: 'gu', label: 'Gujarati', nativeLabel: 'ગુજરાતી' },
     { code: 'en', label: 'English', nativeLabel: 'English' },
@@ -147,8 +151,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     <LanguageContext.Provider
       value={{
         locale,
+        language: locale,
         t,
         switchLanguage,
+        setLanguage: switchLanguage,
         supportedLocales,
         syncTranslationsFromServer,
       }}

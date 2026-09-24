@@ -13,14 +13,14 @@ export const UrgencyBadge: React.FC<UrgencyBadgeProps> = ({ urgency }) => {
   const { colors, typography, borderRadius } = theme;
   const { t } = useTranslation();
 
-  const isCritical = urgency === 'critical';
   const isUrgent = urgency === 'urgent';
+  const isMedium = urgency === 'medium' || urgency === 'normal';
 
-  const badgeColor = isCritical
-    ? colors.statusRejected
-    : isUrgent
+  const badgeColor = isUrgent
     ? colors.accent
-    : colors.secondary;
+    : isMedium
+    ? colors.secondary
+    : colors.textMuted;
   const label = t(`urgency.${urgency}`, urgency);
 
   return (

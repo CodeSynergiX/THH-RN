@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useWizardViewModel } from '../../viewmodels/useWizardViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
@@ -49,6 +50,8 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
     selectDistrict,
     selectTaluka,
     selectVillage,
+    detectLiveLocation,
+    clearCoordinates,
     updateField,
     nextStep,
     prevStep,
@@ -420,7 +423,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   { color: colors.text, fontSize: typography.fontSizeSm },
                 ]}
               >
-                અરજીનો વિષય (Title) *
+                {t('wizard.title_field', 'Title')} *
               </Text>
               <TextInput
                 value={formData.title}
@@ -466,7 +469,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   { color: colors.text, fontSize: typography.fontSizeSm },
                 ]}
               >
-                વિગતવાર વર્ણન (Description) *
+                {t('wizard.description_field', 'Description')} *
               </Text>
               <TextInput
                 value={formData.description}
@@ -514,10 +517,10 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   { color: colors.text, fontSize: typography.fontSizeSm },
                 ]}
               >
-                તાકીદનું સ્તર (Urgency)
+                {t('wizard.urgency', 'Urgency')}
               </Text>
               <View style={styles.urgencyRow}>
-                {(['normal', 'urgent', 'critical'] as const).map(urg => {
+                {(['low', 'medium', 'urgent'] as const).map(urg => {
                   const isSelected = formData.urgency === urg;
                   return (
                     <TouchableOpacity
@@ -620,6 +623,28 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                 </View>
               </TouchableOpacity>
 
+              <TextInput
+                value={formData.email}
+                onChangeText={val => updateField('email', val)}
+                placeholder={t('wizard.email', 'Email (for login and updates)')}
+                placeholderTextColor={colors.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: errors.email
+                      ? colors.statusRejected
+                      : colors.border,
+                    color: colors.text,
+                    borderRadius: borderRadius.md,
+                    padding: spacing.md,
+                    marginTop: spacing.md,
+                  },
+                ]}
+              />
+
               {formData.isHelperMode && (
                 <View style={{ marginTop: spacing.md }}>
                   <TextInput
@@ -701,7 +726,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   { color: colors.text, fontSize: typography.fontSizeSm },
                 ]}
               >
-                જિલ્લો (District)
+                {t('wizard.district', 'District')}
               </Text>
               <ScrollView
                 horizontal
@@ -759,7 +784,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                     { color: colors.text, fontSize: typography.fontSizeSm },
                   ]}
                 >
-                  તાલુકો (Taluka)
+                  {t('wizard.taluka', 'Taluka')}
                 </Text>
                 <ScrollView
                   horizontal
@@ -820,7 +845,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                     { color: colors.text, fontSize: typography.fontSizeSm },
                   ]}
                 >
-                  ગામ (Village)
+                  {t('wizard.village', 'Village')}
                 </Text>
                 <ScrollView
                   horizontal
@@ -869,6 +894,268 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                 </ScrollView>
               </View>
             )}
+
+            {/* Live Location / GPS Pin Card */}
+            <View
+              style={{
+                marginTop: spacing.lg,
+                backgroundColor: colors.surface,
+                borderColor: formData.lat ? colors.secondary : colors.border,
+                borderWidth: formData.lat ? 1.5 : 1,
+                borderRadius: borderRadius.lg,
+                padding: spacing.md,
+                shadowColor: colors.cardShadow,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: spacing.xs,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons
+                    name="location"
+                    size={22}
+                    color={formData.lat ? colors.secondary : colors.primary}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: typography.fontSizeBase,
+                      fontWeight: '700',
+                    }}
+                  >
+                    {t('wizard.live_pin_title', 'Live Location Pin (GPS)')}
+                  </Text>
+                </View>
+                {formData.lat ? (
+                  <View
+                    style={{
+                      backgroundColor: colors.secondary + '20',
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: 2,
+                      borderRadius: borderRadius.full,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.secondary,
+                        fontSize: typography.fontSizeXs,
+                        fontWeight: '700',
+                      }}
+                    >
+                      ● {t('wizard.pinned', 'Pinned')}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: typography.fontSizeXs,
+                  marginBottom: spacing.md,
+                  lineHeight: 18,
+                }}
+              >
+                {t(
+                  'wizard.live_pin_desc',
+                  'Capture exact coordinates so the field coordinator or village volunteer can reach the problem site without delay.',
+                )}
+              </Text>
+
+              {formData.lat && formData.lng ? (
+                <View
+                  style={{
+                    backgroundColor: colors.surfaceSubtle,
+                    borderColor: colors.border,
+                    borderWidth: 1,
+                    borderRadius: borderRadius.md,
+                    padding: spacing.md,
+                    marginBottom: spacing.md,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          color: colors.textMuted,
+                          fontSize: 10,
+                          textTransform: 'uppercase',
+                          fontWeight: '700',
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        GPS Coordinates
+                      </Text>
+                      <Text
+                        style={{
+                          color: colors.text,
+                          fontSize: typography.fontSizeSm,
+                          fontWeight: '700',
+                          fontFamily: 'monospace',
+                          marginTop: 2,
+                        }}
+                      >
+                        {formData.lat.toFixed(5)}° N, {formData.lng.toFixed(5)}°
+                        E
+                      </Text>
+                    </View>
+                    {formData.locationAccuracy ? (
+                      <View
+                        style={{
+                          backgroundColor: colors.primary + '15',
+                          paddingHorizontal: spacing.xs,
+                          paddingVertical: 2,
+                          borderRadius: borderRadius.sm,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: colors.primary,
+                            fontSize: 10,
+                            fontWeight: '600',
+                          }}
+                        >
+                          {formData.locationAccuracy}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      gap: spacing.sm,
+                      marginTop: spacing.sm,
+                      paddingTop: spacing.xs,
+                      borderTopColor: colors.border,
+                      borderTopWidth: 1,
+                    }}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() =>
+                        Linking.openURL(
+                          `https://www.google.com/maps?q=${formData.lat},${formData.lng}`,
+                        )
+                      }
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Ionicons
+                        name="map-outline"
+                        size={14}
+                        color={colors.primary}
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text
+                        style={{
+                          color: colors.primary,
+                          fontSize: typography.fontSizeXs,
+                          fontWeight: '600',
+                        }}
+                      >
+                        View in Maps
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={clearCoordinates}
+                      style={{
+                        marginLeft: 'auto',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={14}
+                        color={colors.statusRejected}
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text
+                        style={{
+                          color: colors.statusRejected,
+                          fontSize: typography.fontSizeXs,
+                        }}
+                      >
+                        Clear Pin
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={detectLiveLocation}
+                disabled={formData.isDetectingLocation}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: formData.lat
+                    ? colors.surfaceSubtle
+                    : colors.primary,
+                  borderColor: formData.lat ? colors.secondary : colors.primary,
+                  borderWidth: 1,
+                  borderRadius: borderRadius.md,
+                  paddingVertical: spacing.md,
+                  paddingHorizontal: spacing.lg,
+                }}
+              >
+                {formData.isDetectingLocation ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={formData.lat ? colors.primary : colors.textInverse}
+                  />
+                ) : (
+                  <>
+                    <Ionicons
+                      name={formData.lat ? 'refresh' : 'navigate'}
+                      size={18}
+                      color={formData.lat ? colors.text : colors.textInverse}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text
+                      style={{
+                        color: formData.lat ? colors.text : colors.textInverse,
+                        fontSize: typography.fontSizeSm,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {formData.lat
+                        ? t(
+                            'wizard.update_location',
+                            'Update Live Location Pin',
+                          )
+                        : t(
+                            'wizard.detect_location',
+                            '📍 Detect My Live Location',
+                          )}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -977,7 +1264,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   { color: colors.textMuted, fontSize: typography.fontSizeXs },
                 ]}
               >
-                વિષય (Title)
+                {t('wizard.title_field', 'Title')}
               </Text>
               <Text
                 style={[
@@ -998,7 +1285,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   },
                 ]}
               >
-                વર્ણન (Description)
+                {t('wizard.description_field', 'Description')}
               </Text>
               <Text
                 style={[
@@ -1019,7 +1306,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   },
                 ]}
               >
-                તાકીદ (Urgency)
+                {t('wizard.urgency', 'Urgency')}
               </Text>
               <Text
                 style={[
@@ -1059,6 +1346,69 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                   </Text>
                 </>
               )}
+
+              <Text
+                style={[
+                  styles.reviewLabel,
+                  {
+                    color: colors.textMuted,
+                    fontSize: typography.fontSizeXs,
+                    marginTop: spacing.sm,
+                  },
+                ]}
+              >
+                📍 સ્થળ (Location)
+              </Text>
+              <Text
+                style={[
+                  styles.reviewValue,
+                  { color: colors.text, fontSize: typography.fontSizeSm },
+                ]}
+              >
+                {formData.villageId
+                  ? availableVillages.find(v => v.id === formData.villageId)
+                      ?.name_gu ||
+                    availableVillages.find(v => v.id === formData.villageId)
+                      ?.name_en
+                  : 'ગામ પસંદ નથી (Village not set)'}
+                {' · '}
+                {formData.districtId
+                  ? districts.find(d => d.id === formData.districtId)
+                      ?.name_gu ||
+                    districts.find(d => d.id === formData.districtId)?.name_en
+                  : '-'}
+              </Text>
+
+              {formData.lat && formData.lng ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: colors.secondary + '15',
+                    padding: spacing.xs,
+                    borderRadius: borderRadius.sm,
+                    marginTop: spacing.xs,
+                  }}
+                >
+                  <Ionicons
+                    name="location"
+                    size={14}
+                    color={colors.secondary}
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.secondary,
+                      fontSize: typography.fontSizeXs,
+                      fontWeight: '700',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    GPS Pin: {formData.lat.toFixed(4)}°,{' '}
+                    {formData.lng.toFixed(4)}°
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
         )}
@@ -1101,7 +1451,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
               styles.navBtnPrimary,
               {
                 backgroundColor: colors.primary,
-                borderRadius: borderRadius.md,
+                borderRadius: 22,
                 paddingVertical: spacing.md,
                 paddingHorizontal: spacing.xl,
               },
