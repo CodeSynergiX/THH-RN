@@ -127,7 +127,7 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [taluka, setTaluka] = useState('');
+  const [, setTaluka] = useState('');
   const [districtsList, setDistrictsList] = useState<District[]>([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(
     null,
@@ -138,10 +138,10 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
   const [selectedVillageIds, setSelectedVillageIds] = useState<number[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
   // Legacy string-based taluka for payload compatibility
-  const selectedVillages = selectedVillageIds
-    .map(vid => availableVillages.find(v => v.id === vid))
-    .filter(Boolean)
-    .map(v => v!.name_en || v!.name_gu);
+  // const selectedVillages = selectedVillageIds
+  //   .map(vid => availableVillages.find(v => v.id === vid))
+  //   .filter(Boolean)
+  //   .map(v => v!.name_en || v!.name_gu);
   const [domainsList, setDomainsList] =
     useState<SevaDomain[]>(EXPERTISE_DOMAINS);
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
@@ -709,7 +709,7 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                     />
                     <Text
                       style={{
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: '700',
                         color: colors.primary,
                       }}
@@ -1291,7 +1291,7 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                           >
                             <Text
                               style={{
-                                fontSize: 11,
+                                fontSize: 13,
                                 fontWeight: '700',
                                 color: colors.primary,
                               }}
@@ -1877,10 +1877,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bannerKicker: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  bannerTitle: { fontSize: 20, fontWeight: '800' },
-  bannerDesc: { fontSize: 12, lineHeight: 18 },
-  bannerDescGu: { fontSize: 12, fontWeight: '600', marginTop: 4 },
+  bannerKicker: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
+  bannerTitle: { fontSize: 22, fontWeight: '800' },
+  bannerDesc: { fontSize: 14, lineHeight: 20 },
+  bannerDescGu: { fontSize: 14, fontWeight: '600', marginTop: 4 },
   roleTabsWrap: {
     flexDirection: 'row',
     padding: 4,
@@ -1902,8 +1902,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   roleTabIconRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  roleTabTitle: { fontSize: 14, fontWeight: '700' },
-  roleTabSub: { fontSize: 11 },
+  roleTabTitle: { fontSize: 16, fontWeight: '700' },
+  roleTabSub: { fontSize: 13 },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -1918,10 +1918,10 @@ const styles = StyleSheet.create({
     gap: 8,
     flexWrap: 'wrap',
   },
-  infoBannerTitle: { fontSize: 13, fontWeight: '700' },
+  infoBannerTitle: { fontSize: 15, fontWeight: '700' },
   activePill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
-  activePillText: { fontSize: 10, fontWeight: '700' },
-  infoBannerSub: { fontSize: 11, marginTop: 2, lineHeight: 16 },
+  activePillText: { fontSize: 12, fontWeight: '700' },
+  infoBannerSub: { fontSize: 13, marginTop: 2, lineHeight: 18 },
   formCard: {
     borderRadius: 16,
     padding: 16,
@@ -1935,7 +1935,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardHeaderTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
@@ -1947,9 +1947,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  locHeaderSub: { fontSize: 11, marginTop: 2, fontWeight: '500' },
+  locHeaderSub: { fontSize: 13, marginTop: 2, fontWeight: '500' },
   locLoadingBox: { alignItems: 'center', paddingVertical: 20, gap: 8 },
-  locLoadingText: { fontSize: 12, fontWeight: '600' },
+  locLoadingText: { fontSize: 14, fontWeight: '600' },
   locStepBox: {
     borderTopWidth: 1,
     paddingTop: 12,
@@ -1969,8 +1969,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  locStepBadgeText: { fontSize: 11, fontWeight: '900' },
-  locStepTitle: { fontSize: 13, fontWeight: '700', flex: 1 },
+  locStepBadgeText: { fontSize: 13, fontWeight: '900' },
+  locStepTitle: { fontSize: 15, fontWeight: '700', flex: 1 },
   locSelectedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1979,7 +1979,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
   },
-  locSelectedBadgeText: { fontSize: 11, fontWeight: '700' },
+  locSelectedBadgeText: { fontSize: 13, fontWeight: '700' },
   locCardGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -2004,8 +2004,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  locSelCardText: { fontSize: 12 },
-  locEmptyHint: { fontSize: 12, fontStyle: 'italic', marginTop: 2 },
+  locSelCardText: { fontSize: 14 },
+  locEmptyHint: { fontSize: 14, fontStyle: 'italic', marginTop: 2 },
   locLockedHint: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2021,17 +2021,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  villageChipText: { fontSize: 12 },
+  villageChipText: { fontSize: 14 },
   rowTwoCol: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   colHalf: { flex: 1 },
   fieldGroup: { marginBottom: 12 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 6 },
-  optionalText: { fontSize: 10, fontWeight: '400' },
+  fieldLabel: { fontSize: 14, fontWeight: '600', marginBottom: 6 },
+  optionalText: { fontSize: 12, fontWeight: '400' },
   inputField: {
     height: 46,
     borderRadius: 10,
     paddingHorizontal: 12,
-    fontSize: 14,
+    fontSize: 16,
   },
   mobileInputRow: {
     flexDirection: 'row',
@@ -2040,9 +2040,9 @@ const styles = StyleSheet.create({
     height: 46,
     paddingLeft: 12,
   },
-  prefix: { fontSize: 14, fontWeight: '600' },
+  prefix: { fontSize: 16, fontWeight: '600' },
   dividerV: { width: 1, height: 18, marginHorizontal: 8 },
-  mobileInput: { flex: 1, fontSize: 14 },
+  mobileInput: { flex: 1, fontSize: 16 },
   emailInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2051,7 +2051,7 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     borderWidth: 1,
   },
-  emailInput: { flex: 1, fontSize: 14 },
+  emailInput: { flex: 1, fontSize: 16 },
   otpBtn: {
     paddingHorizontal: 12,
     height: 36,
@@ -2060,16 +2060,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
   },
-  otpBtnText: { fontSize: 11, fontWeight: '700' },
+  otpBtnText: { fontSize: 13, fontWeight: '700' },
   otpPanel: { padding: 12, borderRadius: 10, marginTop: 8 },
-  otpPrompt: { fontSize: 11, fontWeight: '600', marginBottom: 8 },
+  otpPrompt: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
   otpActionRow: { flexDirection: 'row', gap: 8 },
   otpBox: {
     width: 90,
     height: 42,
     borderRadius: 8,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: 4,
   },
@@ -2080,21 +2080,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  verifyOtpText: { fontSize: 12, fontWeight: '700' },
+  verifyOtpText: { fontSize: 14, fontWeight: '700' },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginTop: 8,
   },
-  verifiedText: { fontSize: 11, fontWeight: '600' },
+  verifiedText: { fontSize: 13, fontWeight: '600' },
   talukaPillList: { gap: 6 },
   talukaPill: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  talukaPillText: { fontSize: 12, fontWeight: '600' },
+  talukaPillText: { fontSize: 14, fontWeight: '600' },
   clusterTagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   clusterTag: {
     flexDirection: 'row',
@@ -2104,7 +2104,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
   },
-  clusterTagText: { fontSize: 11, fontWeight: '600' },
+  clusterTagText: { fontSize: 13, fontWeight: '600' },
   domainList: { gap: 8 },
   domainItem: {
     flexDirection: 'row',
@@ -2123,8 +2123,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 2,
   },
-  domainTitle: { fontSize: 12, fontWeight: '700' },
-  domainDesc: { fontSize: 10, marginTop: 2 },
+  domainTitle: { fontSize: 14, fontWeight: '700' },
+  domainDesc: { fontSize: 12, marginTop: 2 },
   availRow: { gap: 8 },
   availCard: {
     flexDirection: 'row',
@@ -2143,8 +2143,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioDot: { width: 10, height: 10, borderRadius: 5 },
-  availTitle: { fontSize: 12, fontWeight: '700' },
-  availSub: { fontSize: 10 },
+  availTitle: { fontSize: 14, fontWeight: '700' },
+  availSub: { fontSize: 12 },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2158,7 +2158,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  submitBtnText: { fontSize: 15, fontWeight: '700' },
+  submitBtnText: { fontSize: 17, fontWeight: '700' },
   loginLinkWrap: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -2166,8 +2166,8 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 20,
   },
-  loginPrompt: { fontSize: 13 },
-  loginLink: { fontSize: 13, fontWeight: '700' },
+  loginPrompt: { fontSize: 15 },
+  loginLink: { fontSize: 15, fontWeight: '700' },
   // Domain Dropdown
   domainDropdownBtn: {
     flexDirection: 'row',
@@ -2178,8 +2178,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     marginBottom: 4,
   },
-  domainDropdownPlaceholder: { fontSize: 13 },
-  domainDropdownValue: { fontSize: 12, fontWeight: '600' },
+  domainDropdownPlaceholder: { fontSize: 15 },
+  domainDropdownValue: { fontSize: 14, fontWeight: '600' },
   domainCountBadge: {
     minWidth: 22,
     height: 22,
@@ -2188,7 +2188,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
-  domainCountText: { fontSize: 11, fontWeight: '800' },
+  domainCountText: { fontSize: 13, fontWeight: '800' },
   domainChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2197,7 +2197,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
   },
-  domainChipText: { fontSize: 11, fontWeight: '600' },
+  domainChipText: { fontSize: 13, fontWeight: '600' },
   // Domain Modal
   domainModalOverlay: {
     flex: 1,
@@ -2224,8 +2224,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  domainModalTitle: { fontSize: 16, fontWeight: '800' },
-  domainModalSub: { fontSize: 12, marginBottom: 14 },
+  domainModalTitle: { fontSize: 18, fontWeight: '800' },
+  domainModalSub: { fontSize: 14, marginBottom: 14 },
   domainModalList: { maxHeight: 320 },
   domainModalSelectedBar: {
     flexDirection: 'row',
@@ -2237,7 +2237,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
   },
-  domainModalSelectedBarText: { fontSize: 12, fontWeight: '700' },
+  domainModalSelectedBarText: { fontSize: 14, fontWeight: '700' },
   domainModalItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -2256,8 +2256,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 2,
   },
-  domainModalItemTitle: { fontSize: 13, fontWeight: '700' },
-  domainModalItemDesc: { fontSize: 11, marginTop: 2, lineHeight: 16 },
+  domainModalItemTitle: { fontSize: 15, fontWeight: '700' },
+  domainModalItemDesc: { fontSize: 13, marginTop: 2, lineHeight: 18 },
   domainModalDoneBtn: {
     height: 48,
     borderRadius: 12,
@@ -2265,5 +2265,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 14,
   },
-  domainModalDoneText: { fontSize: 15, fontWeight: '800' },
+  domainModalDoneText: { fontSize: 17, fontWeight: '800' },
 });

@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
   },
   markAllBtn: {
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   card: {
     flexDirection: 'row',
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   itemBody: {
-    lineHeight: 18,
+    lineHeight: 20,
   },
   unreadDot: {
     width: 8,

@@ -258,9 +258,18 @@ function TabsScreen({ role }: TabsScreenProps) {
                 activeOpacity={0.8}
               >
                 <View
-                  style={[styles.applyBtn, { backgroundColor: colors.primary }]}
+                  style={[
+                    styles.applyBtn,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surface,
+                    },
+                  ]}
                 >
-                  <Ionicons name="add" size={26} color="#fff" />
+                  <Ionicons
+                    name="add"
+                    size={26}
+                    color={active ? colors.surface : colors.primary}
+                  />
                 </View>
                 <Text
                   numberOfLines={1}
@@ -287,13 +296,17 @@ function TabsScreen({ role }: TabsScreenProps) {
               onPress={() => setTab(item.key)}
               activeOpacity={0.7}
             >
-              <Ionicons name={item.icon as never} size={22} color={color} />
+              <Ionicons
+                name={item.icon as never}
+                size={active ? 26 : 22}
+                color={color}
+              />
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
                   color,
-                  fontSize: 10.5,
+                  fontSize: active ? 14 : 12,
                   fontWeight: active ? '700' : '500',
                   textAlign: 'center',
                   maxWidth: '100%',
@@ -559,7 +572,7 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: -6,
+    marginTop: -16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,

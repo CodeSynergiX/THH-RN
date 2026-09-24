@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Text
               style={[
                 styles.subTitle,
-                { color: colors.textMuted, fontSize: typography.fontSizeXs },
+                { color: colors.textMuted, fontSize: typography.fontSizeBase },
               ]}
             >
               {subtitle || t('app.ngo', 'GGVT Portal')}
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
                     styles.langOptionText,
                     {
                       color: locale === 'en' ? '#FFFFFF' : colors.textMuted,
-                      fontSize: typography.fontSizeXs,
+                      fontSize: typography.fontSizeBase,
                       fontWeight: locale === 'en' ? '800' : '600',
                     },
                   ]}
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   backText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
   },
   logoBadge: {
@@ -244,14 +244,14 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontWeight: '900',
-    fontSize: 14,
+    fontSize: 16,
   },
   titleWrapper: {
     flex: 1,
   },
   mainTitle: {
     fontWeight: '800',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   subTitle: {
     fontWeight: '500',

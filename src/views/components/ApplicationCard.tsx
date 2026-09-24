@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   description: {
-    lineHeight: 18,
+    lineHeight: 20,
     marginBottom: 8,
   },
   bottomRow: {

@@ -95,7 +95,7 @@ export const AdminStatsScreen: React.FC = () => {
               <Text
                 style={{
                   color: colors.textMuted,
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: '700',
                 }}
               >
@@ -104,7 +104,7 @@ export const AdminStatsScreen: React.FC = () => {
               <Text
                 style={{
                   color: colors.secondary,
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: '800',
                 }}
               >

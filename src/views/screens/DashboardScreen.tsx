@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   heroSubtitle: {
-    lineHeight: 18,
+    lineHeight: 20,
   },
   quickActionBtn: {
     alignItems: 'center',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   emptyBtn: {},
   emptyBtnText: {

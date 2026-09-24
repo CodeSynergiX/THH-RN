@@ -63,7 +63,7 @@ export const LegalScreen: React.FC<{
         {title}
       </Text>
       <ScrollView style={{ width }}>
-        <Text style={{ color: colors.text, fontSize: 16, lineHeight: 24 }}>
+        <Text style={{ color: colors.text, fontSize: 18, lineHeight: 26 }}>
           {body}
         </Text>
       </ScrollView>

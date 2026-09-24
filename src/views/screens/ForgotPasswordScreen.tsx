@@ -529,15 +529,15 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                 <View
                   style={[
                     styles.emailPill,
-                    {
-                      backgroundColor:
-                        colors.surfaceSecondary || colors.surfaceSubtle,
-                      borderColor: colors.borderSubtle,
-                    },
+                    // {
+                    //   backgroundColor:
+                    //     colors.surfaceSecondary || colors.surfaceSubtle,
+                    //   borderColor: colors.borderSubtle,
+                    // },
                   ]}
                 >
                   <View style={styles.emailPillLeft}>
-                    <Ionicons name="mail" size={15} color={colors.primary} />
+                    <Ionicons name="mail" size={20} color={colors.primary} />
                     <Text
                       style={[styles.emailPillText, { color: colors.text }]}
                       numberOfLines={1}
@@ -545,7 +545,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                       {email}
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => setStep('email')}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
@@ -554,7 +554,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                     >
                       {isGu ? 'બદલો' : 'Change'}
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
 
                 {/* 6 Digit Inputs */}
@@ -689,7 +689,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                 >
                   <Ionicons
                     name="checkmark-circle"
-                    size={16}
+                    size={20}
                     color={colors.primary}
                   />
                   <Text
@@ -867,7 +867,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
           </View>
 
           {/* ── Minimalist Back to Sign In Link ── */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.backBtn}
             onPress={onBack}
             activeOpacity={0.7}
@@ -876,7 +876,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
             <Text style={[styles.backBtnText, { color: colors.primary }]}>
               {isGu ? 'પાછા લોગિન પર જાઓ' : 'Back to Sign In'}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -925,7 +925,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   heroSub: {
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 18,
@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   inputRow: {
@@ -984,7 +984,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   submitBtnText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
   },
 
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    borderWidth: 1,
+    // borderWidth: 1,
   },
   emailPillLeft: {
     flexDirection: 'row',
@@ -1042,7 +1042,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   emailPillText: {
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '600',
   },
   changeBtnText: {
@@ -1060,7 +1060,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   verifiedPillText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
   },
 
@@ -1074,7 +1074,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   backBtnText: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '600',
   },
 });

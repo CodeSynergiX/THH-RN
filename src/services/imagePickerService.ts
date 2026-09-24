@@ -44,6 +44,44 @@ async function requestCameraPermission(): Promise<boolean> {
   }
 }
 
+async function requestGalleryPermission(): Promise<boolean> {
+  if (Platform.OS !== 'android') return true;
+
+  try {
+    if (Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        {
+          title: 'Photo Library Access',
+          message:
+            'The Helping Hand needs access to your photos to select documents and profile pictures.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Cancel',
+        },
+      );
+      return (
+        granted === PermissionsAndroid.RESULTS.GRANTED ||
+        granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+      );
+    } else {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Access Required',
+          message:
+            'The Helping Hand needs storage access to select photos from your device.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Cancel',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+  } catch (err) {
+    console.warn('Gallery permission error:', err);
+    return true;
+  }
+}
+
 function extractAsset(response: ImagePickerResponse): PickedMedia | null {
   if (response.didCancel) {
     return null;
@@ -101,8 +139,19 @@ export async function captureFromCamera(): Promise<PickedMedia | null> {
       saveToPhotos: false,
     });
     return extractAsset(response);
-  } catch (err) {
+  } catch (err: any) {
     console.warn('launchCamera error:', err);
+    if (
+      err?.message?.includes('of null') ||
+      err?.message?.includes('null is not an object')
+    ) {
+      Alert.alert(
+        'Native Module Linking Required',
+        'Camera native module is not linked in the current APK. The app needs to be recompiled/installed.',
+      );
+    } else {
+      Alert.alert('Camera Error', err?.message || 'Could not open camera.');
+    }
     return null;
   }
 }
@@ -111,6 +160,15 @@ export async function captureFromCamera(): Promise<PickedMedia | null> {
  * Pick an image from device gallery / photo library.
  */
 export async function pickFromGallery(): Promise<PickedMedia | null> {
+  const hasPermission = await requestGalleryPermission();
+  if (!hasPermission) {
+    Alert.alert(
+      'Permission Denied',
+      'Storage / Photo permission is required to select photos. Please enable it in system settings.',
+    );
+    return null;
+  }
+
   try {
     const response = await launchImageLibrary({
       mediaType: 'photo',
@@ -121,8 +179,19 @@ export async function pickFromGallery(): Promise<PickedMedia | null> {
       selectionLimit: 1,
     });
     return extractAsset(response);
-  } catch (err) {
+  } catch (err: any) {
     console.warn('launchImageLibrary error:', err);
+    if (
+      err?.message?.includes('of null') ||
+      err?.message?.includes('null is not an object')
+    ) {
+      Alert.alert(
+        'Native Module Linking Required',
+        'Gallery native module is not linked in the current APK. The app needs to be recompiled/installed.',
+      );
+    } else {
+      Alert.alert('Gallery Error', err?.message || 'Could not open gallery.');
+    }
     return null;
   }
 }

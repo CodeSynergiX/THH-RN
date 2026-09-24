@@ -85,6 +85,6 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 6,
     paddingHorizontal: 16,
-    lineHeight: 16,
+    lineHeight: 18,
   },
 });

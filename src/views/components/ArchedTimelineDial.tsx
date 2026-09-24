@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   swipeHintText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
     color: '#6B7280',
   },
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     borderColor: '#DCFCE7',
   },
   stageBadgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
   },
   stepperWrapper: {
@@ -575,18 +575,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nodePendingNumber: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     color: '#9CA3AF',
   },
   nodeLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
     color: '#6B7280',
     textAlign: 'center',
     marginTop: 6,
     minHeight: 28,
-    lineHeight: 14,
+    lineHeight: 16,
     paddingHorizontal: 2,
   },
   nodeLabelActive: {
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   statusPillText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
   },
   statusPillTextActive: {
@@ -669,13 +669,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   alertHeadline: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '800',
     marginBottom: 2,
   },
   alertDescription: {
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 18,
     color: '#374151',
   },
 });

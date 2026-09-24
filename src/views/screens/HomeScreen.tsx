@@ -410,7 +410,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
               >
                 <Text
-                  style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '800' }}
+                  style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}
                 >
                   GPS PIN
                 </Text>
@@ -428,7 +428,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Text
               style={{
                 color: 'rgba(255,255,255,0.9)',
-                fontSize: 11,
+                fontSize: 13,
                 marginTop: 2,
               }}
             >
@@ -473,7 +473,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
               >
                 <Text
-                  style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '800' }}
+                  style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}
                 >
                   ASSIST
                 </Text>
@@ -491,7 +491,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Text
               style={{
                 color: 'rgba(255,255,255,0.9)',
-                fontSize: 11,
+                fontSize: 13,
                 marginTop: 2,
               }}
             >
@@ -555,7 +555,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               }}
             >
               <Text
-                style={{ color: '#166534', fontSize: 10, fontWeight: '800' }}
+                style={{ color: '#166534', fontSize: 12, fontWeight: '800' }}
               >
                 ● ACTIVE GPS
               </Text>
@@ -614,7 +614,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
               >
                 <Text
-                  style={{ color: cat.color, fontSize: 11, fontWeight: '700' }}
+                  style={{ color: cat.color, fontSize: 13, fontWeight: '700' }}
                 >
                   {cat.label}
                 </Text>
@@ -642,7 +642,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Text
                   style={{
                     color: '#FCD34D',
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: '800',
                     textTransform: 'uppercase',
                     letterSpacing: 0.5,
@@ -653,7 +653,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Text
                   style={{
                     color: '#FFFFFF',
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: '800',
                     fontFamily: 'monospace',
                     marginTop: 2,
@@ -664,7 +664,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Text
                   style={{
                     color: 'rgba(255,255,255,0.7)',
-                    fontSize: 11,
+                    fontSize: 13,
                     marginTop: 2,
                   }}
                 >
@@ -692,7 +692,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
               >
                 <Text
-                  style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}
+                  style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '800' }}
                 >
                   🗺️ View Map
                 </Text>
@@ -714,7 +714,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             }}
           >
             <Text
-              style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}
+              style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}
             >
               {t(
                 'home.open_village_desk',
@@ -778,7 +778,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <Text
                 style={{
                   color: colors.primary,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: '800',
                 }}
               >
@@ -824,7 +824,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       <Text
                         style={{
                           color: '#FFFFFF',
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: '800',
                         }}
                       >
@@ -834,7 +834,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </View>
                   <Text
                     style={{
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: step.active ? '800' : '600',
                       color: step.active ? colors.primary : colors.textMuted,
                       marginTop: 4,
@@ -873,7 +873,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 borderRadius: 12,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                fontSize: 12,
+                fontSize: 14,
                 fontFamily: 'monospace',
                 color: colors.text,
                 backgroundColor: colors.background,
@@ -897,7 +897,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               }}
             >
               <Text
-                style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}
+                style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}
               >
                 {t('home.track_btn', 'Track')}
               </Text>
@@ -910,7 +910,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <Text
           style={{
             color: colors.primary,
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: '800',
             letterSpacing: 1,
             textTransform: 'uppercase',
@@ -973,7 +973,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 style={{
                   color: open ? 'rgba(255,255,255,0.88)' : colors.textMuted,
                   marginTop: 6,
-                  lineHeight: 20,
+                  lineHeight: 22,
                   fontSize: typography.fontSizeSm,
                 }}
               >
@@ -1307,7 +1307,7 @@ const styles = StyleSheet.create({
   },
   trustTagText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
@@ -1322,7 +1322,7 @@ const styles = StyleSheet.create({
   },
   helplineText: {
     color: '#DC2626',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
   },
   ngoTitle: {
@@ -1330,7 +1330,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   ngoSubtitle: {
-    lineHeight: 17,
+    lineHeight: 19,
   },
   heroSection: {
     marginBottom: 16,
@@ -1350,7 +1350,7 @@ const styles = StyleSheet.create({
   },
   heroSubTitle: {
     marginTop: 8,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -1386,7 +1386,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tileBadgeText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
   },
   tileTitle: {
@@ -1394,7 +1394,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   tileSubtitle: {
-    lineHeight: 15,
+    lineHeight: 17,
     marginBottom: 8,
   },
   tileFooter: {
@@ -1433,7 +1433,7 @@ const styles = StyleSheet.create({
     height: 42,
     borderWidth: 1,
     paddingHorizontal: 12,
-    fontSize: 13,
+    fontSize: 15,
   },
   trackBtn: {
     paddingHorizontal: 18,
@@ -1444,7 +1444,7 @@ const styles = StyleSheet.create({
   trackBtnText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 13,
+    fontSize: 15,
   },
   statsBanner: {
     flexDirection: 'row',
@@ -1463,7 +1463,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 2,
     fontWeight: '600',
   },
@@ -1475,7 +1475,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   emergencyHeading: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1497,7 +1497,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emergencyText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
   },
 });

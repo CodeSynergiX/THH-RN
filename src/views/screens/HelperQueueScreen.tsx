@@ -181,9 +181,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 16,
   },
   actions: { flexDirection: 'row', gap: 8, marginTop: 8 },
   btn: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  btnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });

@@ -552,13 +552,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brandName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.5,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   brandSub: {
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
@@ -566,8 +566,8 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   langPill: { flexDirection: 'row', borderRadius: 99, padding: 2 },
   langBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 99 },
-  langTxt: { fontSize: 11 },
-  skipText: { fontSize: 13, fontWeight: '600' },
+  langTxt: { fontSize: 13 },
+  skipText: { fontSize: 15, fontWeight: '600' },
 
   // Step bars
   stepBars: { flexDirection: 'row', gap: 6, height: 6 },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   pillarDot: { width: 8, height: 8, borderRadius: 4 },
   pillarBadgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 99,
   },
-  verifiedText: { fontSize: 10, fontWeight: '500' },
+  verifiedText: { fontSize: 12, fontWeight: '500' },
 
   // Hero visual
   heroVisual: {
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 8,
   },
-  heroBadgeText: { fontSize: 10, fontWeight: '600' },
+  heroBadgeText: { fontSize: 12, fontWeight: '600' },
 
   // Hero text
   heroText: { gap: 6 },
@@ -655,9 +655,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  heroTitleEn: { fontSize: 17, fontWeight: '700', flex: 1, lineHeight: 22 },
+  heroTitleEn: { fontSize: 19, fontWeight: '700', flex: 1, lineHeight: 24 },
   titleDot: { width: 10, height: 10, borderRadius: 5, marginLeft: 6 },
-  heroDesc: { fontSize: 13, lineHeight: 18 },
+  heroDesc: { fontSize: 15, lineHeight: 20 },
   statChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -672,8 +672,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statMain: { fontSize: 13, fontWeight: '700' },
-  statSub: { fontSize: 10, fontWeight: '500', marginTop: 1 },
+  statMain: { fontSize: 15, fontWeight: '700' },
+  statSub: { fontSize: 12, fontWeight: '500', marginTop: 1 },
 
   // Nav dots
   navDots: {
@@ -687,12 +687,12 @@ const styles = StyleSheet.create({
 
   // Tab list
   pillarsLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  pillarsLabelSub: { fontSize: 11, fontWeight: '400' },
+  pillarsLabelSub: { fontSize: 13, fontWeight: '400' },
   tabList: { gap: 8 },
   tabItem: {
     flexDirection: 'row',
@@ -718,9 +718,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  tabTitle: { fontSize: 13, fontWeight: '700', flex: 1 },
+  tabTitle: { fontSize: 15, fontWeight: '700', flex: 1 },
   tabDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 4 },
-  tabSub: { fontSize: 11, marginTop: 2 },
+  tabSub: { fontSize: 13, marginTop: 2 },
 
   // Actions
   actions: { gap: 10, marginTop: 4 },
@@ -733,7 +733,7 @@ const styles = StyleSheet.create({
     gap: 8,
     elevation: 3,
   },
-  primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  primaryBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
   secondaryRow: { flexDirection: 'row', gap: 8 },
   secondaryBtn: {
     flex: 1,
@@ -745,12 +745,12 @@ const styles = StyleSheet.create({
     gap: 6,
     elevation: 1,
   },
-  secondaryBtnText: { fontSize: 13, fontWeight: '600' },
+  secondaryBtnText: { fontSize: 15, fontWeight: '600' },
   trustRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
   },
-  trustText: { fontSize: 11, textAlign: 'center', flex: 1 },
+  trustText: { fontSize: 13, textAlign: 'center', flex: 1 },
 });

@@ -32,22 +32,22 @@ import { useTranslation } from '../../i18n/LanguageContext';
 
 const { width: W } = Dimensions.get('window');
 
-const STATUS_MESSAGES = {
-  en: [
-    'Initializing Gram Seva Network...',
-    'Syncing Village Medical Desks...',
-    'Verifying Seva Volunteer Rosters...',
-    'Connecting 140+ Tribal Centres...',
-    'Ready for Seva & Welfare',
-  ],
-  gu: [
-    'ગ્રામસેવા નેટવર્ક જોડાણ થઈ રહ્યું છે...',
-    'ગામડાઓની સ્વાસ્થ્ય સેવા શરૂ થાય છે...',
-    'સેવાભાવી કાર્યકર્તાઓની યાદી ચકાસી રહ્યાં છીએ...',
-    '૧૪૦+ આદિવાસી ગામડાઓ જોડાઈ ગયા...',
-    'સેવાકાર્ય માટે એપ્લિકેશન તૈયાર છે',
-  ],
-};
+// const STATUS_MESSAGES = {
+//   en: [
+//     'Initializing Gram Seva Network...',
+//     'Syncing Village Medical Desks...',
+//     'Verifying Seva Volunteer Rosters...',
+//     'Connecting 140+ Tribal Centres...',
+//     'Ready for Seva & Welfare',
+//   ],
+//   gu: [
+//     'ગ્રામસેવા નેટવર્ક જોડાણ થઈ રહ્યું છે...',
+//     'ગામડાઓની સ્વાસ્થ્ય સેવા શરૂ થાય છે...',
+//     'સેવાભાવી કાર્યકર્તાઓની યાદી ચકાસી રહ્યાં છીએ...',
+//     '૧૪૦+ આદિવાસી ગામડાઓ જોડાઈ ગયા...',
+//     'સેવાકાર્ય માટે એપ્લિકેશન તૈયાર છે',
+//   ],
+// };
 
 interface Props {
   onReady: () => void;
@@ -237,8 +237,8 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
   const { colors } = theme;
   const { syncTranslationsFromServer } = useTranslation();
   const [lang, setLang] = useState<'en' | 'gu'>('en');
-  const [statusIdx, setStatusIdx] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [, setStatusIdx] = useState(0);
+  const [, setProgress] = useState(0);
 
   // Animations
   const pulseAnim = useRef(new Animated.Value(0.85)).current;
@@ -371,10 +371,10 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const progressWidth = progressAV.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
-  });
+  // const progressWidth = progressAV.interpolate({
+  //   inputRange: [0, 100],
+  //   outputRange: ['0%', '100%'],
+  // });
 
   const PRIMARY = colors.primary || '#006026';
   const SURFACE = colors.background || '#fff8f5';
@@ -511,7 +511,7 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
           </Text>
 
           {/* Village count pill */}
-          <View style={[styles.villagePill, { backgroundColor: '#ffffff' }]}>
+          {/* <View style={[styles.villagePill, { backgroundColor: '#ffffff' }]}>
             <View style={styles.pingWrap}>
               <View
                 style={[styles.pingOuter, { backgroundColor: `${PRIMARY}55` }]}
@@ -525,11 +525,11 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
               </Text>{' '}
               across Navsari & Dang
             </Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Progress card */}
-        <View style={[styles.progressCard, { backgroundColor: '#ffffff' }]}>
+        {/* <View style={[styles.progressCard, { backgroundColor: '#ffffff' }]}>
           <View style={styles.progressHeader}>
             <View style={styles.progressLeft}>
               <Ionicons name="git-network-outline" size={16} color={PRIMARY} />
@@ -573,10 +573,10 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
               </Text>
             </View>
           </View>
-        </View>
+        </View> */}
 
         {/* Skip button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.skipBtn, { backgroundColor: PRIMARY }]}
           onPress={onReady}
           activeOpacity={0.85}
@@ -585,7 +585,7 @@ export const SplashScreen: React.FC<Props> = ({ onReady }) => {
             {lang === 'gu' ? 'સીધા મુખ્ય પૃષ્ઠ પર જાઓ' : 'Enter App / આગળ વધો'}
           </Text>
           <Ionicons name="arrow-forward" size={18} color="#fff" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Text style={[styles.footer, { color: MUTED }]}>
           Rooted in Compassion • Powered by Community
@@ -647,14 +647,14 @@ const styles = StyleSheet.create({
   },
   pulseDot: { width: 8, height: 8, borderRadius: 4 },
   trustText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   langPill: { flexDirection: 'row', borderRadius: 99, padding: 2, gap: 2 },
   langBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 },
-  langBtnText: { fontSize: 11 },
+  langBtnText: { fontSize: 13 },
 
   // Hero
   hero: {
@@ -691,10 +691,10 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 4,
   },
-  brandInitials: { fontSize: 36, fontWeight: '800', letterSpacing: -1 },
+  brandInitials: { fontSize: 38, fontWeight: '800', letterSpacing: -1 },
   brandCenter: { alignItems: 'center' },
-  regMark: { fontSize: 10, fontWeight: '700', lineHeight: 12 },
-  brandTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 1.5 },
+  regMark: { fontSize: 12, fontWeight: '700', lineHeight: 14 },
+  brandTitle: { fontSize: 20, fontWeight: '800', letterSpacing: 1.5 },
 
   // Motto
   mottoPill: {
@@ -706,14 +706,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  mottoText: { fontSize: 12, fontWeight: '600' },
-  mottoSub: { fontSize: 11 },
+  mottoText: { fontSize: 14, fontWeight: '600' },
+  mottoSub: { fontSize: 13 },
 
   // Slogan
   slogan: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
     maxWidth: W * 0.82,
   },
 
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
   },
   pingOuter: { position: 'absolute', width: 10, height: 10, borderRadius: 5 },
   pingInner: { width: 10, height: 10, borderRadius: 5 },
-  villageText: { fontSize: 11, fontWeight: '500', flex: 1 },
+  villageText: { fontSize: 13, fontWeight: '500', flex: 1 },
 
   // Progress card
   progressCard: {
@@ -757,13 +757,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   progressLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
-  progressLabel: { fontSize: 12, fontWeight: '500', flex: 1 },
-  progressPct: { fontSize: 13, fontWeight: '700' },
+  progressLabel: { fontSize: 14, fontWeight: '500', flex: 1 },
+  progressPct: { fontSize: 15, fontWeight: '700' },
   progressTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 4 },
   progressFooter: { flexDirection: 'row', justifyContent: 'space-between' },
   footerItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  footerText: { fontSize: 10, fontWeight: '500' },
+  footerText: { fontSize: 12, fontWeight: '500' },
 
   // Skip
   skipBtn: {
@@ -776,6 +776,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     elevation: 3,
   },
-  skipText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  footer: { textAlign: 'center', fontSize: 11, marginTop: 8, opacity: 0.7 },
+  skipText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  footer: { textAlign: 'center', fontSize: 13, marginTop: 8, opacity: 0.7 },
 });

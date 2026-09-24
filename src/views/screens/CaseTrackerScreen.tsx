@@ -201,7 +201,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                   <Text
                     style={{
                       color: colors.textMuted,
-                      fontSize: 10,
+                      fontSize: 12,
                       textTransform: 'uppercase',
                       fontWeight: '700',
                     }}
@@ -248,7 +248,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                   <Text
                     style={{
                       color: colors.primary,
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: '700',
                     }}
                   >
@@ -288,7 +288,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                     <Text
                       style={{
                         color: colors.textMuted,
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: '600',
                       }}
                     >
@@ -313,7 +313,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                   <Text
                     style={{
                       color: colors.textMuted,
-                      fontSize: 10,
+                      fontSize: 12,
                       textTransform: 'uppercase',
                       fontWeight: '700',
                       marginBottom: 2,
@@ -327,7 +327,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                       {
                         color: colors.text,
                         fontSize: typography.fontSizeSm,
-                        lineHeight: 20,
+                        lineHeight: 22,
                       },
                     ]}
                   >
@@ -356,7 +356,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                     style={{ marginRight: 6 }}
                   />
                   <View>
-                    <Text style={{ color: colors.textMuted, fontSize: 10 }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 12 }}>
                       Applicant / Beneficiary
                     </Text>
                     <Text
@@ -416,7 +416,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                     <Text
                       style={{
                         color: colors.text,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: '700',
                       }}
                     >
@@ -435,7 +435,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                       <Text
                         style={{
                           color: colors.secondary,
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: '700',
                         }}
                       >
@@ -484,7 +484,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                     <Text
                       style={{
                         color: colors.text,
-                        fontSize: 11,
+                        fontSize: 13,
                         fontFamily: 'monospace',
                         fontWeight: '700',
                       }}
@@ -519,7 +519,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                       <Text
                         style={{
                           color: '#ffffff',
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: '700',
                         }}
                       >
@@ -644,7 +644,7 @@ export const CaseTrackerScreen: React.FC<CaseTrackerScreenProps> = ({
                         <Text
                           style={[
                             styles.timelineEventDate,
-                            { color: colors.textMuted, fontSize: 10 },
+                            { color: colors.textMuted, fontSize: 12 },
                           ]}
                         >
                           {ev.created_at
@@ -765,7 +765,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   desc: {
-    lineHeight: 18,
+    lineHeight: 20,
   },
   metaRow: {
     flexDirection: 'row',
@@ -810,7 +810,7 @@ const styles = StyleSheet.create({
   },
   timelineEventBody: {
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   timelineEventDate: {
     marginTop: 4,
@@ -824,6 +824,6 @@ const styles = StyleSheet.create({
   },
   notFoundText: {
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });

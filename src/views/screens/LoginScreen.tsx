@@ -52,39 +52,58 @@ export const LoginScreen: React.FC<Props> = ({
   const { showToast } = useToast();
 
   const [method, setMethod] = useState<'otp' | 'pwd'>('otp');
-  const [identifier, setIdentifier] = useState('');
-  const [secret, setSecret] = useState('');
-  const [showSecret, setShowSecret] = useState(false);
-  const [busy, setBusy] = useState(false);
+
+  // Dedicated state for Password Login
+  const [pwdIdentifier, setPwdIdentifier] = useState('');
+  const [pwdPassword, setPwdPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // ALWAYS hidden by default!
+
+  // Dedicated state for OTP Login
+  const [otpIdentifier, setOtpIdentifier] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  // const [rememberMe, setRememberMe] = useState(true);
+
+  const [busy, setBusy] = useState(false);
+
+  const handleSwitchTab = (newMethod: 'otp' | 'pwd') => {
+    setMethod(newMethod);
+    if (newMethod === 'pwd') {
+      setShowPassword(false); // Always guarantee password is hidden by default when switching
+    }
+  };
 
   const handleSendOtp = async () => {
-    const trimmed = identifier.trim();
-    const isEmailInput = trimmed.includes('@');
-    if (!trimmed || !isEmailInput) {
+    const trimmed = otpIdentifier.trim();
+    if (!trimmed) {
       showToast(
         language === 'gu'
-          ? 'ઓટીપી ફક્ત ઈમેલ સરનામા પર મોકલી શકાય છે. કૃપા કરીને માન્ય ઈમેલ દાખલ કરો.'
-          : 'OTP is only supported for email addresses. Please enter a valid email address.',
+          ? 'કૃપા કરીને મોબાઇલ નંબર અથવા ઈમેલ દાખલ કરો.'
+          : 'Please enter your mobile number or email address.',
         'warning',
-        language === 'gu' ? 'ઈમેલ જરૂરી છે' : 'Email Required',
+        language === 'gu' ? 'માહિતી જરૂરી છે' : 'Identifier Required',
       );
       return;
     }
+    const isEmail = trimmed.includes('@');
     setBusy(true);
     try {
       if (requestOtp) {
         await requestOtp({
-          email: trimmed,
+          email: isEmail ? trimmed : undefined,
+          phone: !isEmail ? trimmed : undefined,
           identifier: trimmed,
           purpose: 'login',
         });
         setOtpSent(true);
         showToast(
-          language === 'gu'
-            ? 'તમારા ઈમેલ પર ઓટીપી મોકલાયો છે. કૃપા કરીને તમારું ઇનબોક્સ તપાસો.'
-            : 'Verification code sent to your email. Please check your inbox.',
+          isEmail
+            ? language === 'gu'
+              ? 'તમારા ઈમેલ પર ઓટીપી મોકલાયો છે. કૃપા કરીને તમારું ઇનબોક્સ તપાસો.'
+              : 'Verification code sent to your email. Please check your inbox.'
+            : language === 'gu'
+            ? 'તમારા મોબાઇલ પર ઓટીપી મોકલાયો છે.'
+            : 'Verification code sent to your mobile phone.',
           'success',
           language === 'gu' ? 'ઓટીપી મોકલ્યો' : 'OTP Sent',
         );
@@ -105,76 +124,108 @@ export const LoginScreen: React.FC<Props> = ({
   };
 
   const handleSignIn = async () => {
-    const trimmedId = identifier.trim();
-    const trimmedSecret = secret.trim();
+    if (method === 'pwd') {
+      const trimmedId = pwdIdentifier.trim();
+      const trimmedPwd = pwdPassword.trim();
 
-    if (!trimmedId) {
-      showToast(
-        language === 'gu'
-          ? 'કૃપા કરીને મોબાઇલ નંબર અથવા ઈમેલ દાખલ કરો.'
-          : 'Please enter your phone number or email address.',
-        'warning',
-        language === 'gu' ? 'માહિતી ખૂટે છે' : 'Identifier Required',
-      );
-      return;
-    }
-    if (method === 'otp' && !trimmedId.includes('@')) {
-      showToast(
-        language === 'gu'
-          ? 'ઓટીપી લોગિન ફક્ત ઈમેલ માટે ઉપલબ્ધ છે. મોબાઇલ નંબર સાથે લોગિન કરવા કૃપા કરીને પાસવર્ડ વિકલ્પ વાપરો.'
-          : 'OTP login is currently only available for email. Please switch to Password tab to sign in with your mobile number.',
-        'warning',
-        language === 'gu' ? 'ઈમેલ જરૂરી છે' : 'Email Required for OTP',
-      );
-      return;
-    }
-    if (!trimmedSecret) {
-      showToast(
-        method === 'otp'
-          ? language === 'gu'
-            ? 'કૃપા કરીને ઈમેલ પર મળેલો ૬-અંકનો ઓટીપી દાખલ કરો.'
-            : 'Please enter the 6-digit OTP received on email.'
-          : language === 'gu'
-          ? 'કૃપા કરીને પાસવર્ડ દાખલ કરો.'
-          : 'Please enter your password.',
-        'warning',
-        language === 'gu'
-          ? method === 'otp'
-            ? 'ઓટીપી જરૂરી છે'
-            : 'પાસવર્ડ જરૂરી છે'
-          : method === 'otp'
-          ? 'OTP Required'
-          : 'Password Required',
-      );
-      return;
-    }
-
-    setBusy(true);
-    try {
-      if (method === 'otp' && verifyOtp) {
-        await verifyOtp({
-          email: trimmedId,
-          identifier: trimmedId,
-          code: trimmedSecret,
-          purpose: 'login',
-        });
-      } else {
-        await login(trimmedId, trimmedSecret);
+      if (!trimmedId) {
+        showToast(
+          language === 'gu'
+            ? 'કૃપા કરીને મોબાઇલ નંબર અથવા ઈમેલ દાખલ કરો.'
+            : 'Please enter your phone number or email address.',
+          'warning',
+          language === 'gu' ? 'માહિતી ખૂટે છે' : 'Identifier Required',
+        );
+        return;
       }
-      showToast(language === 'gu' ? 'સ્વાગત છે!' : 'Welcome back!', 'success');
-      onSuccess();
-    } catch (err) {
-      showToast(
-        err instanceof Error
-          ? err.message
-          : language === 'gu'
-          ? 'કૃપા કરીને વિગતો તપાસો.'
-          : 'Invalid credentials. Please verify and retry.',
-        'error',
-        language === 'gu' ? 'લોગિન નિષ્ફળ' : 'Login Failed',
-      );
-    } finally {
-      setBusy(false);
+      if (!trimmedPwd) {
+        showToast(
+          language === 'gu'
+            ? 'કૃપા કરીને પાસવર્ડ દાખલ કરો.'
+            : 'Please enter your password.',
+          'warning',
+          language === 'gu' ? 'પાસવર્ડ જરૂરી છે' : 'Password Required',
+        );
+        return;
+      }
+
+      setBusy(true);
+      try {
+        await login(trimmedId, trimmedPwd);
+        showToast(
+          language === 'gu' ? 'સ્વાગત છે!' : 'Welcome back!',
+          'success',
+        );
+        onSuccess();
+      } catch (err) {
+        showToast(
+          err instanceof Error
+            ? err.message
+            : language === 'gu'
+            ? 'કૃપા કરીને વિગતો તપાસો.'
+            : 'Invalid credentials. Please verify and retry.',
+          'error',
+          language === 'gu' ? 'લોગિન નિષ્ફળ' : 'Login Failed',
+        );
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      // OTP Method
+      const trimmedId = otpIdentifier.trim();
+      const trimmedOtp = otpCode.trim();
+
+      if (!trimmedId) {
+        showToast(
+          language === 'gu'
+            ? 'કૃપા કરીને મોબાઇલ નંબર અથવા ઈમેલ દાખલ કરો.'
+            : 'Please enter your phone number or email address.',
+          'warning',
+          language === 'gu' ? 'માહિતી ખૂટે છે' : 'Identifier Required',
+        );
+        return;
+      }
+      if (!trimmedOtp) {
+        showToast(
+          language === 'gu'
+            ? 'કૃપા કરીને ઓટીપી કોડ દાખલ કરો.'
+            : 'Please enter the OTP verification code.',
+          'warning',
+          language === 'gu' ? 'ઓટીપી જરૂરી છે' : 'OTP Required',
+        );
+        return;
+      }
+
+      const isEmail = trimmedId.includes('@');
+      setBusy(true);
+      try {
+        if (verifyOtp) {
+          await verifyOtp({
+            email: isEmail ? trimmedId : undefined,
+            phone: !isEmail ? trimmedId : undefined,
+            identifier: trimmedId,
+            code: trimmedOtp,
+            purpose: 'login',
+          });
+        }
+        showToast(
+          language === 'gu' ? 'સ્વાગત છે!' : 'Welcome back!',
+          'success',
+        );
+        onSuccess();
+      } catch (err) {
+        showToast(
+          err instanceof Error
+            ? err.message
+            : language === 'gu'
+            ? 'અમાન્ય ઓટીપી કોડ. કૃપા કરીને ફરી પ્રયાસ કરો.'
+            : 'Invalid or expired OTP code. Please retry.',
+          'error',
+          language === 'gu' ? 'લોગિન નિષ્ફળ' : 'Login Failed',
+        );
+      } finally {
+        setBusy(false);
+      }
     }
   };
   const swayAnim = useRef(new Animated.Value(0)).current;
@@ -301,7 +352,7 @@ export const LoginScreen: React.FC<Props> = ({
               style={[styles.tabBar, { backgroundColor: colors.surfaceSubtle }]}
             >
               <TouchableOpacity
-                onPress={() => setMethod('otp')}
+                onPress={() => handleSwitchTab('otp')}
                 style={[
                   styles.tabBtn,
                   method === 'otp' && [
@@ -324,12 +375,12 @@ export const LoginScreen: React.FC<Props> = ({
                     },
                   ]}
                 >
-                  {language === 'gu' ? 'ઈમેલ ઓટીપી' : 'Email OTP'}
+                  {language === 'gu' ? 'ઓટીપી લોગિન' : 'OTP Login'}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => setMethod('pwd')}
+                onPress={() => handleSwitchTab('pwd')}
                 style={[
                   styles.tabBtn,
                   method === 'pwd' && [
@@ -357,259 +408,308 @@ export const LoginScreen: React.FC<Props> = ({
               </TouchableOpacity>
             </View>
 
-            {/* Identifier Input */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  {method === 'otp'
-                    ? language === 'gu'
-                      ? 'ઈમેલ સરનામું (ઓટીપી માટે)'
-                      : 'Email Address (for OTP)'
-                    : language === 'gu'
-                    ? 'મોબાઇલ નંબર અથવા ઈમેલ'
-                    : 'Mobile Number / Email'}
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.inputRow,
-                  { backgroundColor: colors.surfaceSubtle },
-                ]}
-              >
-                <View style={styles.prefixWrap}>
-                  <Ionicons
-                    name={
-                      identifier.includes('@') ||
-                      /[a-zA-Z]/.test(identifier) ||
-                      method === 'otp'
-                        ? 'mail-outline'
-                        : 'phone-portrait-outline'
-                    }
-                    size={18}
-                    color={colors.primary}
-                  />
-                  {!(
-                    identifier.includes('@') ||
-                    /[a-zA-Z]/.test(identifier) ||
-                    method === 'otp'
-                  ) && (
-                    <Text style={[styles.prefixText, { color: colors.text }]}>
-                      +91
+            {method === 'pwd' ? (
+              <>
+                {/* Password Tab: Mobile / Email Input */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      {language === 'gu'
+                        ? 'મોબાઇલ નંબર અથવા ઈમેલ'
+                        : 'Mobile Number / Email'}
                     </Text>
-                  )}
+                  </View>
                   <View
                     style={[
-                      styles.dividerV,
-                      { backgroundColor: colors.border },
-                    ]}
-                  />
-                </View>
-                <TextInput
-                  style={[styles.textInput, { color: colors.text }]}
-                  placeholder={
-                    method === 'otp'
-                      ? language === 'gu'
-                        ? 'તમારું ઈમેલ સરનામું દાખલ કરો'
-                        : 'Enter your email address'
-                      : language === 'gu'
-                      ? '૯૮૭૬૫ ૪૩૨૧૦ અથવા ઈમેલ'
-                      : '98765 43210 or email'
-                  }
-                  placeholderTextColor={colors.textMuted}
-                  autoCapitalize="none"
-                  keyboardType={method === 'otp' ? 'email-address' : 'default'}
-                  value={identifier}
-                  onChangeText={setIdentifier}
-                />
-                {/* Only show Send OTP button when an email address is detected/written */}
-                {method === 'otp' && identifier.trim().includes('@') && (
-                  <TouchableOpacity
-                    onPress={handleSendOtp}
-                    disabled={busy}
-                    style={[
-                      styles.sendOtpChip,
-                      { backgroundColor: colors.primaryLight },
+                      styles.inputRow,
+                      { backgroundColor: colors.surfaceSubtle },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.sendOtpText,
-                        { color: colors.textInverse },
-                      ]}
-                    >
-                      {otpSent
-                        ? language === 'gu'
-                          ? 'ફરી મોકલો'
-                          : 'Resend'
-                        : language === 'gu'
-                        ? 'ઓટીપી મોકલો'
-                        : 'Send OTP'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                    <View style={styles.prefixWrap}>
+                      <Ionicons
+                        name={
+                          pwdIdentifier.includes('@') ||
+                          /[a-zA-Z]/.test(pwdIdentifier)
+                            ? 'mail-outline'
+                            : 'phone-portrait-outline'
+                        }
+                        size={18}
+                        color={colors.primary}
+                      />
+                      {!(
+                        pwdIdentifier.includes('@') ||
+                        /[a-zA-Z]/.test(pwdIdentifier)
+                      ) && (
+                        <Text
+                          style={[styles.prefixText, { color: colors.text }]}
+                        >
+                          +91
+                        </Text>
+                      )}
+                      <View
+                        style={[
+                          styles.dividerV,
+                          { backgroundColor: colors.border },
+                        ]}
+                      />
+                    </View>
+                    <TextInput
+                      key="pwd-id-field"
+                      style={[styles.textInput, { color: colors.text }]}
+                      placeholder={
+                        language === 'gu'
+                          ? '૯૮૭૬૫ ૪૩૨૧૦ અથવા ઈમેલ'
+                          : '98765 43210 or email'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType={
+                        pwdIdentifier.includes('@')
+                          ? 'email-address'
+                          : 'default'
+                      }
+                      value={pwdIdentifier}
+                      onChangeText={setPwdIdentifier}
+                    />
+                  </View>
+                </View>
 
-              {/* Auto-detection hint: If user entered mobile number while in OTP mode */}
-              {method === 'otp' &&
-                !identifier.trim().includes('@') &&
-                identifier.trim().length > 0 &&
-                /^[0-9+\s-]{1,15}$/.test(identifier.trim()) && (
-                  <TouchableOpacity
-                    onPress={() => setMethod('pwd')}
-                    style={{
-                      marginTop: 6,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                      paddingHorizontal: 2,
-                    }}
+                {/* Password Tab: Password Field (HIDDEN BY DEFAULT) */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      {language === 'gu' ? 'પાસવર્ડ' : 'Password'}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      { backgroundColor: colors.surfaceSubtle },
+                    ]}
                   >
                     <Ionicons
-                      name="information-circle"
-                      size={15}
-                      color={colors.primary}
+                      name="key-outline"
+                      size={18}
+                      color={colors.secondary}
+                      style={{ marginLeft: 12 }}
                     />
+                    <TextInput
+                      key="pwd-password-field"
+                      style={[
+                        styles.textInput,
+                        { color: colors.text, paddingLeft: 8 },
+                      ]}
+                      placeholder={
+                        language === 'gu'
+                          ? 'પાસવર્ડ દાખલ કરો'
+                          : 'Enter password'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showPassword}
+                      textContentType="password"
+                      autoComplete="password"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      value={pwdPassword}
+                      onChangeText={setPwdPassword}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(prev => !prev)}
+                      style={styles.eyeBtn}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons
+                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                        size={18}
+                        color={colors.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Forgot Password Row */}
+                <View style={styles.metaRow}>
+                  <View style={{ flex: 1 }} />
+                  <TouchableOpacity onPress={onForgot}>
+                    <Text
+                      style={[styles.forgotText, { color: colors.primary }]}
+                    >
+                      {language === 'gu'
+                        ? 'પાસવર્ડ ભૂલી ગયા?'
+                        : 'Forgot Password?'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                {/* OTP Tab: Mobile / Email Input */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      {language === 'gu'
+                        ? 'મોબાઇલ નંબર અથવા ઈમેલ (ઓટીપી માટે)'
+                        : 'Mobile Number / Email (for OTP)'}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      { backgroundColor: colors.surfaceSubtle },
+                    ]}
+                  >
+                    <View style={styles.prefixWrap}>
+                      <Ionicons
+                        name={
+                          otpIdentifier.includes('@') ||
+                          /[a-zA-Z]/.test(otpIdentifier)
+                            ? 'mail-outline'
+                            : 'phone-portrait-outline'
+                        }
+                        size={18}
+                        color={colors.primary}
+                      />
+                      {!(
+                        otpIdentifier.includes('@') ||
+                        /[a-zA-Z]/.test(otpIdentifier)
+                      ) && (
+                        <Text
+                          style={[styles.prefixText, { color: colors.text }]}
+                        >
+                          +91
+                        </Text>
+                      )}
+                      <View
+                        style={[
+                          styles.dividerV,
+                          { backgroundColor: colors.border },
+                        ]}
+                      />
+                    </View>
+                    <TextInput
+                      key="otp-id-field"
+                      style={[styles.textInput, { color: colors.text }]}
+                      placeholder={
+                        language === 'gu'
+                          ? '૯૮૭૬૫ ૪૩૨૧૦ અથવા ઈમેલ'
+                          : '98765 43210 or email'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType={
+                        otpIdentifier.includes('@')
+                          ? 'email-address'
+                          : 'default'
+                      }
+                      value={otpIdentifier}
+                      onChangeText={setOtpIdentifier}
+                    />
+                    {otpIdentifier.trim().length >= 4 && (
+                      <TouchableOpacity
+                        onPress={handleSendOtp}
+                        disabled={busy}
+                        style={[
+                          styles.sendOtpChip,
+                          { backgroundColor: colors.primaryLight },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.sendOtpText,
+                            { color: colors.textInverse },
+                          ]}
+                        >
+                          {otpSent
+                            ? language === 'gu'
+                              ? 'ફરી મોકલો'
+                              : 'Resend'
+                            : language === 'gu'
+                            ? 'ઓટીપી મોકલો'
+                            : 'Send OTP'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {otpSent && (
                     <Text
                       style={{
                         fontSize: 11,
                         color: colors.primary,
-                        fontWeight: '700',
+                        marginTop: 4,
+                        fontWeight: '600',
+                        paddingHorizontal: 2,
                       }}
                     >
                       {language === 'gu'
-                        ? 'મોબાઇલ નંબર ડિટેક્ટ થયો — પાસવર્ડ વડે લોગિન કરવા અહીં ટેપ કરો'
-                        : 'Mobile number detected — tap to log in with Password'}
+                        ? '✓ ઓટીપી સફળતાપૂર્વક મોકલવામાં આવ્યો છે'
+                        : '✓ OTP code sent successfully'}
                     </Text>
-                  </TouchableOpacity>
-                )}
-
-              {method === 'otp' && identifier.trim().includes('@') && (
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: colors.secondary,
-                    marginTop: 4,
-                    paddingHorizontal: 2,
-                  }}
-                >
-                  {language === 'gu'
-                    ? 'ℹ નોંધાયેલ ઈમેલ પર ૬ અંકનો ઓટીપી મોકલવામાં આવશે'
-                    : 'ℹ 6-digit OTP will be sent to this email address'}
-                </Text>
-              )}
-
-              {method === 'otp' && !identifier.trim() && (
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: colors.textMuted,
-                    marginTop: 4,
-                    paddingHorizontal: 2,
-                  }}
-                >
-                  {language === 'gu'
-                    ? 'ℹ ઓટીપી ફક્ત ઈમેલ પર ઉપલબ્ધ છે'
-                    : 'ℹ OTP is only available for email addresses'}
-                </Text>
-              )}
-            </View>
-
-            {/* Security PIN / Password Field */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  {method === 'otp'
-                    ? language === 'gu'
-                      ? 'ઓટીપી કોડ'
-                      : 'Security PIN / OTP'
-                    : language === 'gu'
-                    ? 'પાસવર્ડ'
-                    : 'Password'}
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.inputRow,
-                  { backgroundColor: colors.surfaceSubtle },
-                ]}
-              >
-                <Ionicons
-                  name="key-outline"
-                  size={18}
-                  color={colors.secondary}
-                  style={{ marginLeft: 12 }}
-                />
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    { color: colors.text, paddingLeft: 8 },
-                  ]}
-                  placeholder={
-                    method === 'otp'
-                      ? language === 'gu'
-                        ? '૬ આંકડાનો ઓટીપી'
-                        : 'Enter 6-digit OTP'
-                      : language === 'gu'
-                      ? 'પાસવર્ડ દાખલ કરો'
-                      : 'Enter password'
-                  }
-                  placeholderTextColor={colors.textMuted}
-                  secureTextEntry={!showSecret}
-                  keyboardType={method === 'otp' ? 'number-pad' : 'default'}
-                  value={secret}
-                  onChangeText={setSecret}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowSecret(!showSecret)}
-                  style={styles.eyeBtn}
-                >
-                  <Ionicons
-                    name={showSecret ? 'eye-off-outline' : 'eye-outline'}
-                    size={18}
-                    color={colors.textMuted}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Remember me & Forgot Password Row */}
-            <View style={styles.metaRow}>
-              {/*<TouchableOpacity
-                onPress={() => setRememberMe(!rememberMe)}
-                style={styles.rememberWrap}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      borderColor: rememberMe ? colors.primary : colors.border,
-                      backgroundColor: rememberMe
-                        ? colors.primary
-                        : 'transparent',
-                    },
-                  ]}
-                >
-                  {rememberMe && (
-                    <Ionicons
-                      name="checkmark"
-                      size={12}
-                      color={colors.textInverse}
-                    />
                   )}
                 </View>
-                <Text
-                  style={[styles.rememberText, { color: colors.textMuted }]}
-                >
-                  {language === 'gu' ? 'મને યાદ રાખો' : 'Remember me'}
-                </Text>
-              </TouchableOpacity> */}
 
-              <TouchableOpacity onPress={onForgot}>
-                <Text style={[styles.forgotText, { color: colors.primary }]}>
-                  {language === 'gu' ? 'પાસવર્ડ ભૂલી ગયા?' : 'Forgot Password?'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                {/* OTP Tab: OTP Code Field */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      {language === 'gu' ? 'ઓટીપી કોડ' : 'Security PIN / OTP'}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      { backgroundColor: colors.surfaceSubtle },
+                    ]}
+                  >
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={18}
+                      color={colors.secondary}
+                      style={{ marginLeft: 12 }}
+                    />
+                    <TextInput
+                      key="otp-code-field"
+                      style={[
+                        styles.textInput,
+                        {
+                          color: colors.text,
+                          paddingLeft: 8,
+                          letterSpacing: 3,
+                        },
+                      ]}
+                      placeholder={
+                        language === 'gu'
+                          ? '૬ આંકડાનો ઓટીપી'
+                          : 'Enter 6-digit OTP'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showOtp}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      value={otpCode}
+                      onChangeText={setOtpCode}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowOtp(prev => !prev)}
+                      style={styles.eyeBtn}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons
+                        name={showOtp ? 'eye-off-outline' : 'eye-outline'}
+                        size={18}
+                        color={colors.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Spacing for OTP tab */}
+                <View style={{ height: 12 }} />
+              </>
+            )}
 
             {/* Sign In CTA */}
             <TouchableOpacity
@@ -769,7 +869,12 @@ const styles = StyleSheet.create({
   },
   kickerText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8 },
   heroTitle: { fontSize: 24, fontWeight: '700', textAlign: 'center' },
-  heroSub: { fontSize: 13, textAlign: 'center', marginTop: 4 },
+  heroSub: {
+    paddingHorizontal: 5,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 4,
+  },
   heroSubGu: { fontSize: 11, textAlign: 'center', marginTop: 2 },
   card: {
     borderRadius: 16,
@@ -834,7 +939,7 @@ const styles = StyleSheet.create({
   sendOtpText: { fontSize: 11, fontWeight: '700' },
   eyeBtn: { padding: 12 },
   metaRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,

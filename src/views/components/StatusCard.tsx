@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   subtitle: {
-    lineHeight: 16,
+    lineHeight: 18,
   },
   detailBox: {
     marginTop: 8,

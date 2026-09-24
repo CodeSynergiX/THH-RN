@@ -2166,11 +2166,11 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 17, fontWeight: '700' },
+  headerTitle: { fontSize: 19, fontWeight: '700' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   langPill: { flexDirection: 'row', borderRadius: 999, padding: 2 },
   langTab: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  langText: { fontSize: 11, fontWeight: '700' },
+  langText: { fontSize: 13, fontWeight: '700' },
   scrollContent: { padding: 16, gap: 12, paddingBottom: 110 },
   glowBanner: {
     flexDirection: 'row',
@@ -2181,7 +2181,7 @@ const styles = StyleSheet.create({
   },
   glowBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   glowBannerText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -2193,7 +2193,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
   },
-  langIndicatorActive: { fontSize: 10, fontWeight: '800' },
+  langIndicatorActive: { fontSize: 12, fontWeight: '800' },
   card: {
     borderRadius: 16,
     padding: 14,
@@ -2218,19 +2218,19 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   caseCodeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  caseCodeText: { fontSize: 11, fontWeight: '700', fontFamily: 'monospace' },
+  caseCodeText: { fontSize: 13, fontWeight: '700', fontFamily: 'monospace' },
   sectorPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  sectorPillText: { fontSize: 10, fontWeight: '700' },
+  sectorPillText: { fontSize: 12, fontWeight: '700' },
   urgentPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  urgentPillText: { fontSize: 9, fontWeight: '800' },
-  citizenTitle: { fontSize: 16, fontWeight: '800' },
+  urgentPillText: { fontSize: 11, fontWeight: '800' },
+  citizenTitle: { fontSize: 18, fontWeight: '800' },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginTop: 3,
   },
-  locationText: { fontSize: 12 },
+  locationText: { fontSize: 14 },
   avatarSquare: {
     width: 50,
     height: 50,
@@ -2244,10 +2244,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  stepperTitle: { fontSize: 11, fontWeight: '600' },
+  stepperTitle: { fontSize: 13, fontWeight: '600' },
   stepperPulseRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pulseDotGreen: { width: 6, height: 6, borderRadius: 3 },
-  stepperStatusText: { fontSize: 11, fontWeight: '700' },
+  stepperStatusText: { fontSize: 13, fontWeight: '700' },
   progressBarTrack: {
     width: '100%',
     height: 6,
@@ -2256,14 +2256,14 @@ const styles = StyleSheet.create({
   },
   progressBarFill: { height: '100%', borderRadius: 3 },
   milestoneLabelsRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  milestoneLabel: { fontSize: 10 },
+  milestoneLabel: { fontSize: 12 },
   sectionHeaderWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sectionHeaderTitle: { fontSize: 14, fontWeight: '700' },
-  requiredLabel: { fontSize: 11, fontWeight: '600' },
+  sectionHeaderTitle: { fontSize: 16, fontWeight: '700' },
+  requiredLabel: { fontSize: 13, fontWeight: '600' },
 
   // Dropdown Selector Button
   dropdownSelectorBtn: {
@@ -2287,10 +2287,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dropdownStatusTitle: { fontSize: 14, fontWeight: '800' },
-  dropdownStatusSubtitle: { fontSize: 12, fontWeight: '700', marginTop: 1 },
+  dropdownStatusTitle: { fontSize: 16, fontWeight: '800' },
+  dropdownStatusSubtitle: { fontSize: 14, fontWeight: '700', marginTop: 1 },
   dropdownChevronWrap: { padding: 4 },
-  statusHintText: { fontSize: 11, marginTop: -2, paddingHorizontal: 2 },
+  statusHintText: { fontSize: 13, marginTop: -2, paddingHorizontal: 2 },
 
   // Detail Card Elements
   cardHeaderRow: {
@@ -2299,8 +2299,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  cardHeaderTitle: { fontSize: 14, fontWeight: '700' },
-  cardHeaderSub: { fontSize: 11, marginTop: 3 },
+  cardHeaderTitle: { fontSize: 16, fontWeight: '700' },
+  cardHeaderSub: { fontSize: 13, marginTop: 3 },
   micCircleBtn: {
     width: 36,
     height: 36,
@@ -2315,7 +2315,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
   },
-  listeningBarText: { fontSize: 11, fontWeight: '700' },
+  listeningBarText: { fontSize: 13, fontWeight: '700' },
   pulseDotRed: { width: 8, height: 8, borderRadius: 4 },
   quickChipsWrap: {
     flexDirection: 'row',
@@ -2324,12 +2324,12 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   chipBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  chipBtnText: { fontSize: 11, fontWeight: '600' },
+  chipBtnText: { fontSize: 13, fontWeight: '600' },
   notesArea: {
     minHeight: 88,
     borderRadius: 10,
     padding: 10,
-    fontSize: 13,
+    fontSize: 15,
     textAlignVertical: 'top',
   },
   notesFooter: {
@@ -2337,9 +2337,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  notesCounter: { fontSize: 11 },
+  notesCounter: { fontSize: 13 },
   snippetBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  snippetBtnText: { fontSize: 11, fontWeight: '700' },
+  snippetBtnText: { fontSize: 13, fontWeight: '700' },
 
   gpsAutoTagPill: {
     flexDirection: 'row',
@@ -2349,7 +2349,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
   },
-  gpsAutoTagText: { fontSize: 10, fontWeight: '700' },
+  gpsAutoTagText: { fontSize: 12, fontWeight: '700' },
   photoGrid: { flexDirection: 'row', gap: 8, marginTop: 4 },
   photoSlot: {
     flex: 1,
@@ -2365,8 +2365,8 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 6,
   },
-  geotagTextWhite: { color: '#ffffff', fontSize: 9, fontWeight: '700' },
-  geotagSubWhite: { color: '#e0e0e0', fontSize: 8 },
+  geotagTextWhite: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
+  geotagSubWhite: { color: '#e0e0e0', fontSize: 10 },
   removePhotoBtn: { position: 'absolute', top: 4, right: 4 },
   addPhotoSlot: {
     flex: 1,
@@ -2386,8 +2386,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  addPhotoTitle: { fontSize: 11, fontWeight: '700' },
-  addPhotoSub: { fontSize: 10 },
+  addPhotoTitle: { fontSize: 13, fontWeight: '700' },
+  addPhotoSub: { fontSize: 12 },
   priorityRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2406,11 +2406,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  priorityTitle: { fontSize: 13, fontWeight: '700' },
-  prioritySub: { fontSize: 11 },
+  priorityTitle: { fontSize: 15, fontWeight: '700' },
+  prioritySub: { fontSize: 13 },
   priorityTogglePill: { flexDirection: 'row', borderRadius: 999, padding: 2 },
   priorityTab: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  priorityTabText: { fontSize: 11, fontWeight: '700' },
+  priorityTabText: { fontSize: 13, fontWeight: '700' },
   pledgeBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2418,7 +2418,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
   },
-  pledgeText: { fontSize: 11, flex: 1, lineHeight: 15 },
+  pledgeText: { fontSize: 13, flex: 1, lineHeight: 17 },
 
   bottomActionWrap: {
     position: 'absolute',
@@ -2436,8 +2436,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  primarySolveText: { color: '#ffffff', fontSize: 14, fontWeight: '800' },
-  primarySolveSubText: { color: 'rgba(255,255,255,0.85)', fontSize: 10 },
+  primarySolveText: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
+  primarySolveSubText: { color: 'rgba(255,255,255,0.85)', fontSize: 12 },
 
   // Modal Styles
   modalBackdrop: {
@@ -2458,8 +2458,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  modalTitle: { fontSize: 17, fontWeight: '800' },
-  modalSub: { fontSize: 11, marginTop: 2 },
+  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalSub: { fontSize: 13, marginTop: 2 },
   modalCloseBtn: {
     width: 32,
     height: 32,
@@ -2483,9 +2483,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalOptionTitle: { fontSize: 13, fontWeight: '700' },
-  modalOptionTitleGu: { fontSize: 12, fontWeight: '700' },
-  modalOptionDesc: { fontSize: 11, marginTop: 2 },
+  modalOptionTitle: { fontSize: 15, fontWeight: '700' },
+  modalOptionTitleGu: { fontSize: 14, fontWeight: '700' },
+  modalOptionDesc: { fontSize: 13, marginTop: 2 },
 
   // Read-only banner & review cards
   readOnlyBannerCard: {
@@ -2506,28 +2506,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   readOnlyBannerTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '800',
   },
   readOnlyBannerSub: {
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   readOnlyNotesBox: {
     padding: 12,
     borderRadius: 10,
   },
   readOnlyNotesLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   readOnlyNotesBody: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 15,
+    lineHeight: 21,
   },
 
   // Detailed Progress Timeline Styles
@@ -2544,7 +2544,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '700',
   },
   stepsCountBadge: {
@@ -2553,7 +2553,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   stepsCountText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
   },
   verticalTrailContainer: {
@@ -2589,12 +2589,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stepTitleText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
     flex: 1,
   },
   stepTimeText: {
-    fontSize: 10,
+    fontSize: 12,
   },
   statusTransitionPill: {
     alignSelf: 'flex-start',
@@ -2604,13 +2604,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   statusTransitionText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   stepDescText: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 14,
+    lineHeight: 19,
     marginTop: 2,
   },
   systemVerifiedRow: {
@@ -2620,7 +2620,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   systemVerifiedText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
   },
   verticalTrailLine: {

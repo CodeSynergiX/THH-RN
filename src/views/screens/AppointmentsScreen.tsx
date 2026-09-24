@@ -96,7 +96,7 @@ export const AppointmentsScreen: React.FC<Props> = ({ onOpenCase }) => {
                 {item.application?.title}
               </Text>
               <Text
-                style={{ color: colors.textMuted, marginTop: 6, fontSize: 13 }}
+                style={{ color: colors.textMuted, marginTop: 6, fontSize: 15 }}
               >
                 {item.scheduled_for
                   ? new Date(item.scheduled_for).toLocaleString()

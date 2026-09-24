@@ -718,7 +718,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                         <Text
                           style={{
                             color: colors.secondary,
-                            fontSize: 11,
+                            fontSize: 13,
                             fontWeight: '700',
                             fontFamily: 'monospace',
                           }}
@@ -774,7 +774,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                           <Text
                             style={[
                               styles.tagText,
-                              { color: colors.primary, fontSize: 10 },
+                              { color: colors.primary, fontSize: 12 },
                             ]}
                           >
                             {doc}
@@ -1107,7 +1107,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                 <Text
                   style={[
                     styles.modalTitle,
-                    { color: colors.text, fontSize: 18, fontWeight: '700' },
+                    { color: colors.text, fontSize: 20, fontWeight: '700' },
                   ]}
                 >
                   🚨 {t('module.report_problem', 'Report Village Problem')}
@@ -1115,7 +1115,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                 <Text
                   style={{
                     color: colors.textMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                     marginTop: 2,
                   }}
                 >
@@ -1192,7 +1192,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       style={{
                         color:
                           reportCategory === cat.key ? cat.color : colors.text,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: reportCategory === cat.key ? '700' : '500',
                       }}
                     >
@@ -1244,7 +1244,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       <Text
                         style={{
                           color: isSel ? colors.textInverse : colors.text,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: isSel ? '700' : '500',
                         }}
                       >
@@ -1286,7 +1286,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                     <Text
                       style={{
                         color: colors.text,
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: '700',
                       }}
                     >
@@ -1305,7 +1305,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       <Text
                         style={{
                           color: colors.secondary,
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: '700',
                         }}
                       >
@@ -1327,7 +1327,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                     <Text
                       style={{
                         color: colors.text,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: '700',
                         fontFamily: 'monospace',
                       }}
@@ -1338,7 +1338,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       <Text
                         style={{
                           color: colors.textMuted,
-                          fontSize: 11,
+                          fontSize: 13,
                           marginTop: 2,
                         }}
                       >
@@ -1354,7 +1354,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       style={{ marginTop: 4, alignSelf: 'flex-start' }}
                     >
                       <Text
-                        style={{ color: colors.statusRejected, fontSize: 11 }}
+                        style={{ color: colors.statusRejected, fontSize: 13 }}
                       >
                         Clear Pin
                       </Text>
@@ -1364,7 +1364,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                   <Text
                     style={{
                       color: colors.textMuted,
-                      fontSize: 11,
+                      fontSize: 13,
                       marginTop: 4,
                     }}
                   >
@@ -1407,7 +1407,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                       <Text
                         style={{
                           color: reportLat ? colors.text : '#ffffff',
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: '700',
                         }}
                       >
@@ -1532,7 +1532,7 @@ export const CommunityModuleScreen: React.FC<CommunityModuleScreenProps> = ({
                     <Text
                       style={{
                         color: bloodGroup === bg ? '#ffffff' : colors.text,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: 'bold',
                       }}
                     >
@@ -1759,7 +1759,7 @@ const styles = StyleSheet.create({
   },
   topActionText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
   filterBar: {
@@ -1777,7 +1777,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 15,
     paddingVertical: 4,
   },
   centerContainer: {
@@ -1824,7 +1824,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: '700',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   cardSubText: {
     marginTop: 2,
@@ -1835,7 +1835,7 @@ const styles = StyleSheet.create({
   },
   cardDetail: {
     marginTop: 10,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   docTagsRow: {
     flexDirection: 'row',
@@ -1885,11 +1885,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   inputLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     marginTop: 10,
     marginBottom: 4,
@@ -1899,7 +1899,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    fontSize: 13,
+    fontSize: 15,
   },
   textArea: {
     height: 80,
@@ -1925,7 +1925,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
   },
   inlineFormCard: {
@@ -1964,12 +1964,12 @@ const styles = StyleSheet.create({
   inlineSuccessTitle: {
     color: '#16A34A',
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 17,
   },
   inlineSuccessCaseNo: {
     marginTop: 4,
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 15,
   },
   inlineFormFields: {
     gap: 4,
@@ -1983,7 +1983,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9,
-    fontSize: 13,
+    fontSize: 15,
   },
   inlineTextArea: {
     height: 72,
@@ -2001,7 +2001,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   urgencyPillText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
   },
   inlineSubmitBtn: {
@@ -2013,7 +2013,7 @@ const styles = StyleSheet.create({
   inlineSubmitText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 15,
   },
   openWizardBtn: {
     marginTop: 10,
@@ -2022,6 +2022,6 @@ const styles = StyleSheet.create({
   },
   openWizardText: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 14,
   },
 });

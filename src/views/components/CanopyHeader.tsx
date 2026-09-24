@@ -127,7 +127,7 @@ export const CanopyHeader: React.FC<CanopyHeaderProps> = ({
                 <Text
                   style={{
                     color: locale === 'en' ? colors.primary : colors.textMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: '700',
                   }}
                 >
@@ -148,7 +148,7 @@ export const CanopyHeader: React.FC<CanopyHeaderProps> = ({
                 <Text
                   style={{
                     color: locale === 'gu' ? colors.primary : colors.textMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: '700',
                   }}
                 >
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
     marginLeft: -4,
   },
   logo: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 8,
   },
   mark: {
@@ -231,15 +231,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brand: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '700',
   },
   backTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   sub: {
-    fontSize: 10.5,
+    fontSize: 12,
     marginTop: 1,
   },
   lang: {

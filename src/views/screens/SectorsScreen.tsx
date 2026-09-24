@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     paddingVertical: 0,
   },
   subHeader: {
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   subHeaderCount: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: 16,
   },
   body: {
     padding: 16,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   categoryTagText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.2,
   },
@@ -519,17 +519,17 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   countChipText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   cardSubtitle: {
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
   },
   arrowCircle: {
     width: 32,
@@ -549,11 +549,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   emptySubtitle: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: 'center',
   },
   clearBtn: {
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   clearBtnText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
   },
 });

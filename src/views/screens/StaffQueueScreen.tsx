@@ -87,7 +87,7 @@ export const StaffQueueScreen: React.FC<Props> = ({ onOpenCase }) => {
                 style={{
                   color: active ? '#fff' : colors.text,
                   fontWeight: '700',
-                  fontSize: 12,
+                  fontSize: 14,
                 }}
               >
                 {t(`urgency.${filter.key}`, filter.label)}

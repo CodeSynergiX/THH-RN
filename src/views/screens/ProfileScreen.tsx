@@ -547,10 +547,10 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                   <Ionicons
                     name="id-card-outline"
                     size={13}
-                    color={colors.primary}
+                    color={colors.surface}
                   />
                   <Text
-                    style={[styles.chipPillText, { color: colors.primary }]}
+                    style={[styles.chipPillText, { color: colors.surface }]}
                   >
                     {memberCode}
                   </Text>
@@ -1335,7 +1335,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
           </View>
 
           {/* 4. Community & Safety Toggles */}
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          {/* <View style={[styles.card, { backgroundColor: colors.surface }]}>
             <View style={styles.sectionTitleRow}>
               <View
                 style={[
@@ -1350,7 +1350,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
               </Text>
             </View>
 
-            {/* Blood Donor Network Toggle */}
+            {/* Blood Donor Network Toggle *
             <View
               style={[
                 styles.toggleCardItem,
@@ -1397,7 +1397,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Push / SMS Alerts Toggle */}
+            {/* Push / SMS Alerts Toggle 
             <View
               style={[
                 styles.toggleCardItem,
@@ -1447,7 +1447,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                 />
               </TouchableOpacity>
             </View>
-          </View>
+          </View> */}
 
           {/* Save Profile CTA */}
           <TouchableOpacity
@@ -2344,13 +2344,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 10,
   },
-  logoText: { fontWeight: '900', fontSize: 13 },
-  headerTitle: { fontSize: 16, fontWeight: '800' },
-  headerSub: { fontSize: 11, fontWeight: '600' },
+  logoText: { fontWeight: '900', fontSize: 15 },
+  headerTitle: { fontSize: 18, fontWeight: '800' },
+  headerSub: { fontSize: 13, fontWeight: '600' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   langPill: { flexDirection: 'row', borderRadius: 20, padding: 3 },
   langTab: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
-  langText: { fontSize: 12, fontWeight: '700' },
+  langText: { fontSize: 14, fontWeight: '700' },
   settingsBtn: { padding: 4 },
   scrollContent: { padding: 16, paddingBottom: 40 },
   card: {
@@ -2380,7 +2380,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarTextLarge: { fontSize: 36, fontWeight: '800' },
+  avatarTextLarge: { fontSize: 38, fontWeight: '800' },
   cameraBadgeBtn: {
     position: 'absolute',
     right: 0,
@@ -2399,8 +2399,8 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 2,
   },
-  nameTitle: { fontSize: 19, fontWeight: '800' },
-  nameGu: { fontSize: 13, marginBottom: 8 },
+  nameTitle: { fontSize: 21, fontWeight: '800' },
+  nameGu: { fontSize: 15, marginBottom: 8 },
   badgeChipsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   chipPill: {
     flexDirection: 'row',
@@ -2410,7 +2410,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 20,
   },
-  chipPillText: { fontSize: 12, fontWeight: '600' },
+  chipPillText: { fontSize: 14, fontWeight: '600' },
   trustIndicatorsGrid: {
     flexDirection: 'row',
     width: '100%',
@@ -2419,9 +2419,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   trustCol: { flex: 1, alignItems: 'center' },
-  trustLabel: { fontSize: 11, fontWeight: '600', marginBottom: 4 },
+  trustLabel: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
   trustValRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  trustVal: { fontSize: 12, fontWeight: '700' },
+  trustVal: { fontSize: 14, fontWeight: '700' },
   dotAmber: { width: 6, height: 6, borderRadius: 3 },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -2429,16 +2429,21 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     gap: 6,
   },
-  titleBarIndicator: { width: 4, height: 18, borderRadius: 2 },
-  sectionTitleH2: { fontSize: 16, fontWeight: '800' },
-  sectionTitleSub: { fontSize: 13, fontWeight: '600' },
+  titleBarIndicator: {
+    width: 4,
+    height: 18,
+    borderRadius: 2,
+    marginBottom: 10,
+  },
+  sectionTitleH2: { fontSize: 20, fontWeight: '800', marginBottom: 10 },
+  sectionTitleSub: { fontSize: 15, fontWeight: '600' },
   nameInputsGrid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  inputFieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  inputFieldLabel: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   textInputStyle: {
     height: 44,
     borderRadius: 10,
     paddingHorizontal: 12,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   fieldHeaderBetween: {
@@ -2449,7 +2454,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   verifiedTagRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  verifiedTagText: { fontSize: 11, fontWeight: '700' },
+  verifiedTagText: { fontSize: 13, fontWeight: '700' },
   lockedInputBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2459,7 +2464,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
   },
-  lockedInputText: { fontSize: 14, fontWeight: '600', flex: 1 },
+  lockedInputText: { fontSize: 16, fontWeight: '600', flex: 1 },
   genderOptionsRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   genderTabBtn: {
     flex: 1,
@@ -2470,7 +2475,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 10,
   },
-  genderTabText: { fontSize: 12, fontWeight: '700' },
+  genderTabText: { fontSize: 14, fontWeight: '700' },
   iconInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2479,8 +2484,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 8,
   },
-  inlineInput: { flex: 1, height: 44, fontSize: 14, fontWeight: '600' },
-  bloodValueText: { fontSize: 14, fontWeight: '700' },
+  inlineInput: { flex: 1, height: 44, fontSize: 16, fontWeight: '600' },
+  bloodValueText: { fontSize: 16, fontWeight: '700' },
   villageInfoBox: { borderRadius: 12, padding: 12 },
   villageHeaderRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   cottageIconBox: {
@@ -2490,8 +2495,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  villageTitle: { fontSize: 14, fontWeight: '700' },
-  villageSub: { fontSize: 12, marginTop: 2 },
+  villageTitle: { fontSize: 16, fontWeight: '700' },
+  villageSub: { fontSize: 14, marginTop: 2 },
   changeLocationPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2500,7 +2505,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  changeLocationText: { fontSize: 11, fontWeight: '700' },
+  changeLocationText: { fontSize: 13, fontWeight: '700' },
   locationSelectorsContainer: { marginTop: 12 },
   selectorInputWrap: {
     flexDirection: 'row',
@@ -2510,7 +2515,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 10,
   },
-  selectorValueText: { fontSize: 14, fontWeight: '700', flex: 1 },
+  selectorValueText: { fontSize: 16, fontWeight: '700', flex: 1 },
   toggleCardItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2526,9 +2531,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  toggleTitle: { fontSize: 14, fontWeight: '700' },
-  toggleSub: { fontSize: 11, marginTop: 2 },
-  toggleSubGu: { fontSize: 11, fontWeight: '700', marginTop: 2 },
+  toggleTitle: { fontSize: 16, fontWeight: '700' },
+  toggleSub: { fontSize: 13, marginTop: 2 },
+  toggleSubGu: { fontSize: 13, fontWeight: '700', marginTop: 2 },
   customToggleBox: {
     width: 44,
     height: 24,
@@ -2554,7 +2559,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 2,
   },
-  saveBtnText: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
+  saveBtnText: { color: '#ffffff', fontSize: 18, fontWeight: '800' },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2562,7 +2567,7 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 14,
   },
-  logoutText: { fontSize: 14, fontWeight: '700' },
+  logoutText: { fontSize: 16, fontWeight: '700' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -2587,8 +2592,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  modalTitleText: { fontSize: 16, fontWeight: '800' },
-  modalSubtitleText: { fontSize: 12, marginBottom: 14 },
+  modalTitleText: { fontSize: 18, fontWeight: '800' },
+  modalSubtitleText: { fontSize: 14, marginBottom: 14 },
   bloodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   bloodItemBtn: {
     width: '48%',
@@ -2601,9 +2606,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  bloodCodeText: { fontSize: 18, fontWeight: '900' },
-  bloodGuText: { fontSize: 11, fontWeight: '600', marginTop: 2 },
-  bloodNoteText: { fontSize: 10, marginTop: 2 },
+  bloodCodeText: { fontSize: 20, fontWeight: '900' },
+  bloodGuText: { fontSize: 13, fontWeight: '600', marginTop: 2 },
+  bloodNoteText: { fontSize: 12, marginTop: 2 },
   photoSheetContent: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -2618,8 +2623,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
-  sheetTitle: { fontSize: 18, fontWeight: '800' },
-  sheetSub: { fontSize: 13, marginTop: 2, marginBottom: 18 },
+  sheetTitle: { fontSize: 20, fontWeight: '800' },
+  sheetSub: { fontSize: 15, marginTop: 2, marginBottom: 18 },
   sheetActionRow: { flexDirection: 'row', gap: 16, marginBottom: 20 },
   sheetActionBtn: {
     flex: 1,
@@ -2635,9 +2640,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  sheetActionLabel: { fontSize: 14, fontWeight: '800' },
-  sheetActionSub: { fontSize: 11, marginTop: 2 },
-  presetSectionTitle: { fontSize: 12, fontWeight: '700', marginBottom: 10 },
+  sheetActionLabel: { fontSize: 16, fontWeight: '800' },
+  sheetActionSub: { fontSize: 13, marginTop: 2 },
+  presetSectionTitle: { fontSize: 14, fontWeight: '700', marginBottom: 10 },
   presetAvatarsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -2658,14 +2663,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 8,
   },
-  removePhotoText: { fontSize: 14, fontWeight: '700' },
+  removePhotoText: { fontSize: 16, fontWeight: '700' },
   cancelModalBtn: {
     height: 46,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelModalText: { fontSize: 14, fontWeight: '700' },
+  cancelModalText: { fontSize: 16, fontWeight: '700' },
   locationModalCard: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -2687,11 +2692,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   locTabTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '800',
   },
   locTabSubtitle: {
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 2,
     fontWeight: '600',
   },
@@ -2707,7 +2712,7 @@ const styles = StyleSheet.create({
   locSearchInput: {
     flex: 1,
     height: 42,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
   locListScroll: {
@@ -2730,11 +2735,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   locRowTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
   },
   locRowSub: {
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 2,
   },
   emptyStateBox: {
@@ -2744,7 +2749,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyStateText: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: 'center',
     paddingHorizontal: 16,
   },
@@ -2755,7 +2760,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   emptyStateActionText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
   doneBtn: {
@@ -2767,7 +2772,7 @@ const styles = StyleSheet.create({
   },
   doneBtnText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '800',
   },
   gpsDetectBtn: {
@@ -2781,11 +2786,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   gpsDetectTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
   },
   gpsDetectSub: {
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 2,
     fontWeight: '500',
   },

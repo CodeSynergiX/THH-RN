@@ -635,7 +635,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                     ]}
                   >
                     {formData.isHelperMode && (
-                      <Text style={{ color: colors.textInverse, fontSize: 11 }}>
+                      <Text style={{ color: colors.textInverse, fontSize: 13 }}>
                         ✓
                       </Text>
                     )}
@@ -987,7 +987,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                     color: colors.textMuted,
                     fontSize: typography.fontSizeXs,
                     marginBottom: spacing.md,
-                    lineHeight: 18,
+                    lineHeight: 20,
                   }}
                 >
                   {t(
@@ -1018,7 +1018,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                         <Text
                           style={{
                             color: colors.textMuted,
-                            fontSize: 10,
+                            fontSize: 12,
                             textTransform: 'uppercase',
                             fontWeight: '700',
                             letterSpacing: 0.5,
@@ -1051,7 +1051,7 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
                           <Text
                             style={{
                               color: colors.primary,
-                              fontSize: 10,
+                              fontSize: 12,
                               fontWeight: '600',
                             }}
                           >
@@ -1529,7 +1529,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stepDesc: {
-    lineHeight: 18,
+    lineHeight: 20,
     marginBottom: 12,
   },
   errorText: {
@@ -1575,7 +1575,7 @@ const styles = StyleSheet.create({
   },
   radioCheck: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '900',
   },
   subCatRow: {
@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
   },
   docNoticeDesc: {
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   reviewCard: {
     borderWidth: 1,
@@ -1696,7 +1696,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   successIcon: {
-    fontSize: 48,
+    fontSize: 50,
     marginBottom: 8,
   },
   successTitle: {
@@ -1719,7 +1719,7 @@ const styles = StyleSheet.create({
   },
   successNote: {
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   successActions: {
     width: '100%',

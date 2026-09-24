@@ -23,7 +23,7 @@ import {
   captureFromCamera,
   pickFromGallery,
 } from '../../services/imagePickerService';
-import { District, Taluka, Village } from '../../models/demographics.model';
+import { District } from '../../models/demographics.model';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import { configService } from '../../services/configService';
 import { CanopyHeader } from '../components/CanopyHeader';
@@ -129,7 +129,7 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
       .catch(err => {
         console.warn('Failed to load districts in NeedHelpFormScreen:', err);
       });
-  }, []);
+  }, [districtId]);
 
   // Cascading location objects
   const selectedDistrict = useMemo(
@@ -832,7 +832,7 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                 {Boolean(selectedVillage?.pincode) && (
                   <Text
                     style={{
-                      fontSize: 11,
+                      fontSize: 13,
                       color: colors.textMuted,
                       marginTop: 2,
                     }}
@@ -1623,12 +1623,12 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
 
               {locationTab === 'taluka' &&
                 availableTalukas
-                  .filter(t => {
+                  .filter(te => {
                     const q = locationSearch.toLowerCase().trim();
                     if (!q) return true;
                     return (
-                      t.name_en?.toLowerCase().includes(q) ||
-                      t.name_gu?.toLowerCase().includes(q)
+                      te.name_en?.toLowerCase().includes(q) ||
+                      te.name_gu?.toLowerCase().includes(q)
                     );
                   })
                   .map(tal => {
@@ -1856,8 +1856,8 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 17, fontWeight: '700' },
-  headerSubTitle: { fontSize: 11 },
+  headerTitle: { fontSize: 19, fontWeight: '700' },
+  headerSubTitle: { fontSize: 13 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   langPill: {
     flexDirection: 'row',
@@ -1869,7 +1869,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
   },
-  langText: { fontSize: 11, fontWeight: '700' },
+  langText: { fontSize: 13, fontWeight: '700' },
   avatarCircle: {
     width: 32,
     height: 32,
@@ -1877,7 +1877,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 14, fontWeight: '800' },
+  avatarText: { fontSize: 16, fontWeight: '800' },
   scrollContent: { padding: 16, gap: 12, paddingBottom: 120 },
   brandBanner: {
     flexDirection: 'row',
@@ -1893,8 +1893,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandOrg: { fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
-  brandSub: { fontSize: 12 },
+  brandOrg: { fontSize: 12, fontWeight: '800', letterSpacing: 0.8 },
+  brandSub: { fontSize: 14 },
   onlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1904,7 +1904,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   pulseDot: { width: 7, height: 7, borderRadius: 3.5 },
-  onlineText: { fontSize: 11, fontWeight: '600' },
+  onlineText: { fontSize: 13, fontWeight: '600' },
   card: {
     borderRadius: 16,
     padding: 14,
@@ -1938,10 +1938,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sectorBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999 },
-  sectorBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '700' },
-  sectorBadgeGu: { fontSize: 11, fontWeight: '600' },
-  sectorTitle: { fontSize: 16, fontWeight: '700' },
-  sectorSub: { fontSize: 12 },
+  sectorBadgeText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  sectorBadgeGu: { fontSize: 13, fontWeight: '600' },
+  sectorTitle: { fontSize: 18, fontWeight: '700' },
+  sectorSub: { fontSize: 14 },
   changeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1950,16 +1950,16 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
-  changeBtnText: { fontSize: 12, fontWeight: '700' },
+  changeBtnText: { fontSize: 14, fontWeight: '700' },
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   verifiedTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cardHeaderTitle: { fontSize: 14, fontWeight: '700' },
+  cardHeaderTitle: { fontSize: 16, fontWeight: '700' },
   memberPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  memberPillText: { fontSize: 10, fontWeight: '700' },
+  memberPillText: { fontSize: 12, fontWeight: '700' },
   fieldRowBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1967,8 +1967,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
   },
-  fieldLabel: { fontSize: 11 },
-  fieldInput: { fontSize: 14, fontWeight: '700', paddingVertical: 2 },
+  fieldLabel: { fontSize: 13 },
+  fieldInput: { fontSize: 16, fontWeight: '700', paddingVertical: 2 },
   editIconBtn: {
     width: 30,
     height: 30,
@@ -1986,8 +1986,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   lockedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  contactLabel: { fontSize: 10 },
-  contactValue: { fontSize: 12, fontWeight: '700' },
+  contactLabel: { fontSize: 12 },
+  contactValue: { fontSize: 14, fontWeight: '700' },
   gpsDetectBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1996,7 +1996,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
   },
-  gpsBtnText: { fontSize: 11, fontWeight: '700' },
+  gpsBtnText: { fontSize: 13, fontWeight: '700' },
   talukaSelect: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2006,10 +2006,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  talukaSelectText: { fontSize: 14, fontWeight: '600' },
-  langTag: { fontSize: 11, fontWeight: '600' },
+  talukaSelectText: { fontSize: 16, fontWeight: '600' },
+  langTag: { fontSize: 13, fontWeight: '600' },
   textareaBox: { borderRadius: 10, padding: 10 },
-  textarea: { minHeight: 90, textAlignVertical: 'top', fontSize: 14 },
+  textarea: { minHeight: 90, textAlignVertical: 'top', fontSize: 16 },
   micActionBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2026,7 +2026,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
   },
-  micBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  micBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
   listeningDot: {
     width: 7,
     height: 7,
@@ -2035,10 +2035,10 @@ const styles = StyleSheet.create({
     opacity: 0.85,
     marginLeft: 2,
   },
-  charCounter: { fontSize: 11 },
+  charCounter: { fontSize: 13 },
   dictationNote: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dictationNoteText: { fontSize: 11 },
-  docCountBadge: { fontSize: 12, fontWeight: '700' },
+  dictationNoteText: { fontSize: 13 },
+  docCountBadge: { fontSize: 14, fontWeight: '700' },
   uploadBox: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -2056,8 +2056,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 6,
   },
-  uploadTitle: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
-  uploadSub: { fontSize: 11, textAlign: 'center', marginTop: 2 },
+  uploadTitle: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
+  uploadSub: { fontSize: 13, textAlign: 'center', marginTop: 2 },
   docList: { gap: 8, marginTop: 4 },
   docChip: {
     flexDirection: 'row',
@@ -2074,8 +2074,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  docName: { fontSize: 13, fontWeight: '600' },
-  docMeta: { fontSize: 11 },
+  docName: { fontSize: 15, fontWeight: '600' },
+  docMeta: { fontSize: 13 },
   docCancelBtn: { padding: 4 },
   urgentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   urgentIconBox: {
@@ -2085,8 +2085,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  urgentTitle: { fontSize: 13, fontWeight: '700' },
-  urgentSub: { fontSize: 11, marginTop: 2 },
+  urgentTitle: { fontSize: 15, fontWeight: '700' },
+  urgentSub: { fontSize: 13, marginTop: 2 },
   customToggle: {
     width: 44,
     height: 24,
@@ -2108,7 +2108,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 4,
   },
-  promiseText: { fontSize: 12, flex: 1 },
+  promiseText: { fontSize: 14, flex: 1 },
   bottomBar: {
     position: 'absolute',
     bottom: 0,
@@ -2128,9 +2128,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  submitBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  submitBtnText: { color: '#ffffff', fontSize: 17, fontWeight: '700' },
   securityStrip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  securityText: { fontSize: 11, fontWeight: '600' },
+  securityText: { fontSize: 13, fontWeight: '600' },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -2145,7 +2145,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
-  modalTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
   talukaItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2154,7 +2154,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
   },
-  talukaItemText: { fontSize: 14, fontWeight: '600' },
+  talukaItemText: { fontSize: 16, fontWeight: '600' },
   successCard: {
     width: '100%',
     maxWidth: 340,
@@ -2171,13 +2171,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  successTitle: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  successSub: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  successTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center' },
+  successSub: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
   successBody: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: 'center',
     marginVertical: 6,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   doneBtn: {
     width: '100%',
@@ -2187,7 +2187,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 8,
   },
-  doneBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  doneBtnText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
   modalOverlayBottom: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -2207,8 +2207,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
-  sheetTitle: { fontSize: 18, fontWeight: '800' },
-  sheetSub: { fontSize: 13, marginTop: 2, marginBottom: 18 },
+  sheetTitle: { fontSize: 20, fontWeight: '800' },
+  sheetSub: { fontSize: 15, marginTop: 2, marginBottom: 18 },
   sheetActionRow: { flexDirection: 'row', gap: 16, marginBottom: 20 },
   sheetActionBtn: {
     flex: 1,
@@ -2224,15 +2224,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  sheetActionBtnTitle: { fontSize: 14, fontWeight: '800' },
-  sheetActionBtnSub: { fontSize: 11, marginTop: 2 },
+  sheetActionBtnTitle: { fontSize: 16, fontWeight: '800' },
+  sheetActionBtnSub: { fontSize: 13, marginTop: 2 },
   cancelModalBtn: {
     height: 46,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelModalText: { fontSize: 14, fontWeight: '700' },
+  cancelModalText: { fontSize: 16, fontWeight: '700' },
   locationModalCard: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -2250,7 +2250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalTitleText: { fontSize: 16, fontWeight: '800' },
+  modalTitleText: { fontSize: 18, fontWeight: '800' },
   gpsModalShortcut: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2261,11 +2261,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   gpsShortcutTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
   },
   gpsShortcutSub: {
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 2,
   },
   locTabNav: {
@@ -2282,11 +2282,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   locTabTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '800',
   },
   locTabSubtitle: {
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 2,
     fontWeight: '600',
   },
@@ -2303,7 +2303,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 42,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
   locListItem: {
@@ -2316,11 +2316,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   locItemTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
   },
   locItemSub: {
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 2,
   },
 });
