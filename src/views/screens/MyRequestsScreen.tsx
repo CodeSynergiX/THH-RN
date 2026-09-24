@@ -363,7 +363,11 @@ export const MyRequestsScreen: React.FC<Props> = ({ onOpen, onNewHelp }) => {
           <View
             style={[
               styles.segmentedTabs,
-              { backgroundColor: colors.surfaceSubtle },
+              {
+                backgroundColor: colors.surfaceSubtle,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+              },
             ]}
           >
             <TouchableOpacity
@@ -372,7 +376,11 @@ export const MyRequestsScreen: React.FC<Props> = ({ onOpen, onNewHelp }) => {
                 styles.segmentTab,
                 activeTab === 'all' && [
                   styles.segmentTabActive,
-                  { backgroundColor: colors.surface },
+                  {
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.borderSubtle,
+                  },
                 ],
               ]}
             >
@@ -397,7 +405,11 @@ export const MyRequestsScreen: React.FC<Props> = ({ onOpen, onNewHelp }) => {
                 styles.segmentTab,
                 activeTab === 'active' && [
                   styles.segmentTabActive,
-                  { backgroundColor: colors.surface },
+                  {
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.borderSubtle,
+                  },
                 ],
               ]}
             >
@@ -424,7 +436,11 @@ export const MyRequestsScreen: React.FC<Props> = ({ onOpen, onNewHelp }) => {
                 styles.segmentTab,
                 activeTab === 'resolved' && [
                   styles.segmentTabActive,
-                  { backgroundColor: colors.surface },
+                  {
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.borderSubtle,
+                  },
                 ],
               ]}
             >

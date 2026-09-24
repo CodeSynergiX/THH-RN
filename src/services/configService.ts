@@ -59,6 +59,8 @@ export class ConfigService {
         title_en?: string;
         title_gu?: string;
         subtitle?: string;
+        subtitle_en?: string;
+        subtitle_gu?: string;
         icon?: string;
         accent_color?: string;
         show_apply_form?: boolean;

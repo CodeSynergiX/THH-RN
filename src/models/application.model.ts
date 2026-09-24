@@ -146,5 +146,12 @@ export interface CreateApplicationPayload {
     file_path: string;
     original_name?: string;
     mime_type?: string;
+    base64?: string;
+    size?: string;
+    name?: string;
+    uri?: string;
+    type?: string;
+    path?: string;
   }>;
 }
+

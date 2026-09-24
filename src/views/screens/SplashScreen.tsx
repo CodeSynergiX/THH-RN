@@ -54,7 +54,7 @@ interface Props {
 }
 
 // ── Animated Tree SVG Component ───────────────────────────────────────────────
-const THHTreeSVG: React.FC<{
+export const THHTreeSVG: React.FC<{
   swayAnim: Animated.Value;
   floatAnim: Animated.Value;
 }> = ({ swayAnim, floatAnim }) => {

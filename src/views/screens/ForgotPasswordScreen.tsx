@@ -1,6 +1,10 @@
 /**
- * ForgotPasswordScreen — translated faithfully from Stitch design
- * "Forgot Password / પાસવર્ડ ભૂલી ગયા" (screen: 199bff5727704272b9305559808ca74e).
+ * ForgotPasswordScreen — Clean, minimalist password recovery flow
+ * Strictly Email-based with 3 progressive steps:
+ *   Step 1: Enter registered email -> Send OTP
+ *   Step 2: Enter 6-digit verification code -> Verify OTP (OTP section shown only after OTP is sent)
+ *   Step 3: Enter new password & confirm -> Reset password (OTP hidden, password inputs shown only after OTP verified)
+ * Dynamic theme colors and seamless bilingual language support.
  */
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -10,59 +14,51 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Linking,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Svg, { Path, Circle } from 'react-native-svg';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { authService } from '../../services/authService';
 import { CanopyHeader } from '../components/CanopyHeader';
+import { THHTreeSVG } from './SplashScreen';
 
-// ── Stitch Design Tokens ──────────────────────────────────────────────────────
-const C = {
-  primary: '#006026',
-  primaryCont: '#1b7a38',
-  primaryFixed: '#9bf7a6',
-  surface: '#fff8f5',
-  surfaceLow: '#fff1ea',
-  surfaceCont: '#ffeadf',
-  surfaceHigh: '#ffe3d4',
-  surfaceHiest: '#ffdbc8',
-  white: '#ffffff',
-  secondary: '#79573c',
-  secCont: '#ffd1af',
-  onSurface: '#2a170b',
-  onSurfaceVar: '#3f493f',
-  muted: '#6f7a6e',
-  outlineVar: '#bfcabb',
-  whatsapp: '#25D366',
-  error: '#ba1a1a',
-  errCont: '#ffdad6',
-};
+type Step = 'email' | 'otp' | 'password';
 
 export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
   onBack,
 }) => {
-  const { locale } = useTranslation();
+  const { theme } = useAppTheme();
+  const { colors, typography } = theme;
+  const { language, locale } = useTranslation();
   const auth = useAuth();
+  const { showToast } = useToast();
 
-  const gu = locale === 'gu';
+  const isGu = (language || locale) === 'gu';
 
-  // Form State
-  const [method, setMethod] = useState<'phone' | 'email'>('phone');
-  const [contact, setContact] = useState('');
+  // Step state: 'email' -> 'otp' -> 'password'
+  const [step, setStep] = useState<Step>('email');
+
+  // Form states
+  const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+  const [verifiedToken, setVerifiedToken] = useState<string | undefined>(undefined);
+  const [verifiedCode, setVerifiedCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Status & timer states
   const [busy, setBusy] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [resendTimer, setResendTimer] = useState(48);
+  const [resendTimer, setResendTimer] = useState(60);
 
   const otpInputRefs = [
     useRef<any>(null),
@@ -73,23 +69,67 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
     useRef<any>(null),
   ];
 
-  // Timer countdown
+  const swayAnim = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  // Crown sway animation
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(swayAnim, {
+          toValue: 1,
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(swayAnim, {
+          toValue: 0,
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ]),
+    ).start();
+  }, [swayAnim]);
+
+  // People / leaf float animation
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ]),
+    ).start();
+  }, [floatAnim]);
+
+  // Timer countdown on OTP step
   useEffect(() => {
     let timer: any;
-    if (otpSent && resendTimer > 0) {
+    if (step === 'otp' && resendTimer > 0) {
       timer = setInterval(() => {
         setResendTimer(prev => prev - 1);
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [otpSent, resendTimer]);
+  }, [step, resendTimer]);
 
-  // const handleLangToggle = (newLang: 'en' | 'gu') => {
-  //   setLang(newLang);
-  //   switchLanguage(newLang).catch(() => {});
-  // };
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const fullCode = otpCode.join('');
+  const isOtpComplete = fullCode.length === 6;
+  const isPasswordValid = newPassword.length >= 4;
+  const passwordsMatch = isPasswordValid && newPassword === confirmPassword;
 
-  // OTP Input Handler
+  // OTP Input Handlers
   const handleOtpChange = (text: string, index: number) => {
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length > 1) {
@@ -119,88 +159,64 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
     }
   };
 
-  const { showToast } = useToast();
-
-  const fullCode = otpCode.join('');
-
-  // Send OTP
-  const sendOtp = async () => {
-    if (!contact.trim()) {
+  // Step 1: Send OTP to Email
+  const handleSendOtp = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !isEmailValid) {
       showToast(
-        gu
-          ? 'કૃપા કરીને રજિસ્ટર્ડ નંબર અથવા ઈમેલ દાખલ કરો'
-          : 'Please enter your registered phone or email',
+        isGu
+          ? 'કૃપા કરીને માન્ય ઈમેલ સરનામું દાખલ કરો.'
+          : 'Please enter a valid email address.',
         'warning',
-        gu ? 'માહિતી ખૂટે છે' : 'Missing Information',
+        isGu ? 'ઈમેલ જરૂરી છે' : 'Email Required',
       );
       return;
     }
 
     setBusy(true);
     try {
-      const payload =
-        method === 'email'
-          ? { email: contact.trim(), purpose: 'reset' }
-          : { phone: contact.trim(), purpose: 'reset' };
+      await auth.requestOtp({
+        email: trimmedEmail,
+        purpose: 'reset',
+      });
 
-      await auth.requestOtp(payload);
-      setOtpSent(true);
-      setResendTimer(48);
+      setStep('otp');
+      setResendTimer(60);
+      setOtpCode(['', '', '', '', '', '']);
 
       showToast(
-        gu
-          ? 'તમારા રજિસ્ટર્ડ સંપર્ક પર ઓટીપી મોકલ્યો છે. કૃપા કરીને તમારું ઇનબોક્સ તપાસો.'
-          : 'Verification code sent to your registered contact. Please check your inbox.',
+        isGu
+          ? `${trimmedEmail} પર ઓટીપી મોકલ્યો છે.`
+          : `Verification code sent to ${trimmedEmail}.`,
         'success',
-        gu ? 'ઓટીપી મોકલવામાં આવ્યો' : 'OTP Sent Successfully',
+        isGu ? 'ઓટીપી મોકલ્યો' : 'OTP Sent',
       );
+
+      setTimeout(() => {
+        otpInputRefs[0].current?.focus();
+      }, 300);
     } catch (err) {
       showToast(
         err instanceof Error
           ? err.message
-          : gu
-          ? 'ઓટીપી મોકલી શકાયો નહીં'
-          : 'Could not send OTP',
+          : isGu
+          ? 'ઓટીપી મોકલી શકાયો નહીં. ફરી પ્રયાસ કરો.'
+          : 'Could not send verification code. Please try again.',
         'error',
-        gu ? 'ઓટીપી નિષ્ફળ' : 'Could not send OTP',
+        isGu ? 'ઓટીપી નિષ્ફળ' : 'Failed',
       );
     } finally {
       setBusy(false);
     }
   };
 
-  // Reset Password
-  const handleResetPassword = async () => {
-    if (!contact.trim()) {
-      showToast(
-        gu
-          ? 'કૃપા કરીને રજિસ્ટર્ડ સંપર્ક દાખલ કરો'
-          : 'Please enter your registered contact',
-        'warning',
-      );
-      return;
-    }
+  // Step 2: Verify 6-digit OTP
+  const handleVerifyOtp = async () => {
     if (fullCode.length < 6) {
       showToast(
-        gu
-          ? 'કૃપા કરીને ૬-અંકનો ઓટીપી દાખલ કરો'
-          : 'Please enter the 6-digit OTP code',
-        'warning',
-      );
-      return;
-    }
-    if (newPassword.length < 4) {
-      showToast(
-        gu
-          ? 'નવો પિન / પાસવર્ડ ઓછામાં ઓછો ૪ અક્ષરનો હોવો જોઈએ'
-          : 'New PIN/password must be at least 4 characters',
-        'warning',
-      );
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      showToast(
-        gu ? 'બંને પિન / પાસવર્ડ સરખા નથી' : 'PINs/passwords do not match',
+        isGu
+          ? 'કૃપા કરીને સંપૂર્ણ ૬-અંકનો ઓટીપી દાખલ કરો.'
+          : 'Please enter the complete 6-digit OTP code.',
         'warning',
       );
       return;
@@ -208,22 +224,83 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
 
     setBusy(true);
     try {
-      await auth.resetPasswordWithOtp({
-        email: method === 'email' ? contact.trim() : undefined,
-        phone: method === 'phone' ? contact.trim() : undefined,
+      const res = await authService.verifyOtp({
+        email: email.trim().toLowerCase(),
         code: fullCode,
+        purpose: 'reset',
+      });
+
+      if (res.data?.token) {
+        setVerifiedToken(res.data.token);
+      }
+      setVerifiedCode(fullCode);
+
+      showToast(
+        isGu
+          ? 'ઓટીપી ચકાસાયો! હવે નવો પાસવર્ડ સેટ કરો.'
+          : 'OTP verified! Now set your new password.',
+        'success',
+        isGu ? 'ચકાસાયેલ' : 'Verified',
+      );
+
+      // Hide OTP, advance to password setup
+      setStep('password');
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : isGu
+          ? 'અમાન્ય અથવા સમાપ્ત થયેલ ઓટીપી.'
+          : 'Invalid or expired OTP code.',
+        'error',
+        isGu ? 'ચકાસણી નિષ્ફળ' : 'Verification Failed',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Step 3: Reset Password
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 4) {
+      showToast(
+        isGu
+          ? 'નવો પાસવર્ડ ઓછામાં ઓછો ૪ અક્ષરનો હોવો જોઈએ.'
+          : 'New password must be at least 4 characters long.',
+        'warning',
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showToast(
+        isGu
+          ? 'બંને પાસવર્ડ સરખા નથી.'
+          : 'Passwords do not match.',
+        'warning',
+      );
+      return;
+    }
+
+    setBusy(true);
+    try {
+      await authService.resetPasswordWithOtp({
+        email: email.trim().toLowerCase(),
+        code: verifiedCode || fullCode,
+        token: verifiedToken,
         password: newPassword,
         password_confirmation: confirmPassword,
         purpose: 'reset',
       });
 
       showToast(
-        gu
-          ? 'તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે. હવે લોગિન કરો.'
-          : 'Your password has been reset successfully. Please log in.',
+        isGu
+          ? 'પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે! હવે લોગિન કરો.'
+          : 'Password reset successfully! Please sign in with your new password.',
         'success',
-        gu ? 'સફળતા!' : 'Success!',
+        isGu ? 'સફળતા!' : 'Success!',
       );
+
       setTimeout(() => {
         onBack();
       }, 1200);
@@ -231,1082 +308,757 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
       showToast(
         err instanceof Error
           ? err.message
-          : gu
-          ? 'અમાન્ય ઓટીપી અથવા વિનંતી સમાપ્ત થઈ ગઈ છે.'
-          : 'Invalid OTP or expired request.',
+          : isGu
+          ? 'પાસવર્ડ બદલવામાં નિષ્ફળ. કૃપા કરીને ફરી પ્રયાસ કરો.'
+          : 'Failed to reset password. Please try again.',
         'error',
-        gu ? 'પાસવર્ડ બદલવામાં નિષ્ફળ' : 'Password Reset Failed',
+        isGu ? 'નિષ્ફળ' : 'Error',
       );
     } finally {
       setBusy(false);
     }
   };
 
-  const isContactValid =
-    method === 'phone'
-      ? contact.replace(/\D/g, '').length === 10
-      : contact.includes('@');
-
-  const passwordsMatch =
-    newPassword.length >= 4 && newPassword === confirmPassword;
-
   return (
     <SafeAreaView
-      style={[styles.safe, { backgroundColor: C.surface }]}
+      style={[styles.wrap, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
-      {/* ── Top Reusable Canopy Header ── */}
-      <CanopyHeader showBack onBack={onBack} />
+      {/* ── Native Top Canopy Header (Back button, Logo, Language Switch) ── */}
+      <CanopyHeader
+        showBack
+        onBack={onBack}
+        title={isGu ? 'પાસવર્ડ પુનઃપ્રાપ્તિ' : 'Reset Password'}
+      />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 200 }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
         >
-          {/* ── Top Visual Badge / Safe Shelter Iconography ── */}
-          <View style={styles.heroSection}>
-            <View style={styles.badgeContainer}>
-              <View style={styles.badgeOuterRing}>
-                <View style={styles.badgeInnerCircle}>
-                  <Ionicons name="refresh" size={30} color="#fff" />
-                </View>
-              </View>
-              <View style={styles.verifiedShield}>
-                <Ionicons name="shield-checkmark" size={13} color={C.primary} />
-              </View>
+          {/* ── Minimalist Hero Header ── */}
+          <View style={styles.headerHero}>
+            <View
+              style={[
+                styles.treeCircle,
+                { backgroundColor: colors.surface, width: 200, height: 200 },
+              ]}
+            >
+              <THHTreeSVG swayAnim={swayAnim} floatAnim={floatAnim} />
             </View>
 
-            <Text style={styles.headline}>Forgot Password?</Text>
-            <Text style={styles.subHeadline}>પાસવર્ડ પુનઃપ્રાપ્તિ</Text>
-            <Text style={styles.instructions}>
-              Enter your registered contact to receive a secure recovery code ·
-              તમારા રજિસ્ટર્ડ નંબર પર ઓટીપી મેળવો
+            <View
+              style={[
+                styles.kickerPill,
+                { backgroundColor: colors.surfaceSubtle },
+              ]}
+            >
+              <Ionicons name="shield-checkmark" size={13} color={colors.primary} />
+              <Text style={[styles.kickerText, { color: colors.secondary }]}>
+                {step === 'email'
+                  ? isGu
+                    ? 'પગલું ૧: ઈમેલ ચકાસણી'
+                    : 'STEP 1: EMAIL VERIFICATION'
+                  : step === 'otp'
+                  ? isGu
+                    ? 'પગલું ૨: ઓટીપી દાખલ કરો'
+                    : 'STEP 2: ENTER OTP'
+                  : isGu
+                  ? 'પગલું ૩: નવો પાસવર્ડ'
+                  : 'STEP 3: NEW PASSWORD'}
+              </Text>
+            </View>
+
+            <Text
+              style={[
+                styles.heroTitle,
+                { color: colors.text, fontFamily: typography.fontFamilySans },
+              ]}
+            >
+              {step === 'email'
+                ? isGu
+                  ? 'પાસવર્ડ ભૂલી ગયા છો?'
+                  : 'Forgot Password?'
+                : step === 'otp'
+                ? isGu
+                  ? 'ઓટીપી દાખલ કરો'
+                  : 'Enter Verification Code'
+                : isGu
+                ? 'નવો પાસવર્ડ સેટ કરો'
+                : 'Set New Password'}
+            </Text>
+
+            <Text style={[styles.heroSub, { color: colors.textMuted }]}>
+              {step === 'email'
+                ? isGu
+                  ? 'તમારા નોંધાયેલ ઈમેલ પર ૬-અંકનો ઓટીપી મેળવો'
+                  : 'Enter your registered email to receive a recovery code'
+                : step === 'otp'
+                ? isGu
+                  ? `${email} પર મોકલેલો ૬-અંકનો ઓટીપી દાખલ કરો`
+                  : `Enter the 6-digit code sent to ${email}`
+                : isGu
+                ? 'તમારા એકાઉન્ટ માટે સુરક્ષિત નવો પાસવર્ડ બનાવો'
+                : 'Create a new secure password for your account'}
             </Text>
           </View>
 
-          {/* ── Recovery Method Toggle Pills ── */}
-          <View style={styles.methodToggleWrap}>
-            <TouchableOpacity
-              style={[
-                styles.methodBtn,
-                method === 'phone' && styles.methodBtnActive,
-              ]}
-              onPress={() => {
-                setMethod('phone');
-                setContact('');
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="phone-portrait-outline"
-                size={17}
-                color={method === 'phone' ? C.primary : C.onSurfaceVar}
-              />
-              <Text
-                style={[
-                  styles.methodBtnText,
-                  method === 'phone' && styles.methodBtnTextActive,
-                ]}
-              >
-                Mobile (+91)
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.methodBtn,
-                method === 'email' && styles.methodBtnActive,
-              ]}
-              onPress={() => {
-                setMethod('email');
-                setContact('');
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="at-outline"
-                size={17}
-                color={method === 'email' ? C.primary : C.onSurfaceVar}
-              />
-              <Text
-                style={[
-                  styles.methodBtnText,
-                  method === 'email' && styles.methodBtnTextActive,
-                ]}
-              >
-                Email ID
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ── Card 1: Primary Credentials Input Card ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardLabel}>
-                {method === 'phone' ? 'Registered Mobile' : 'Registered Email'}
-                <Text style={styles.cardLabelGu}>
-                  {method === 'phone'
-                    ? ' / રજિસ્ટર્ડ નંબર'
-                    : ' / રજિસ્ટર્ડ ઈમેલ'}
-                </Text>
-              </Text>
-
-              <View style={styles.verifiedMemberPill}>
-                <Ionicons name="checkmark-circle" size={13} color={C.primary} />
-                <Text style={styles.verifiedMemberText}>Verified Member</Text>
-              </View>
-            </View>
-
-            {/* Input field with prefix & green checkmark */}
-            <View style={styles.inputWrap}>
-              <View style={styles.inputPrefix}>
-                <Ionicons
-                  name={
-                    method === 'phone'
-                      ? 'phone-portrait-outline'
-                      : 'mail-outline'
-                  }
-                  size={17}
-                  color={C.onSurfaceVar}
-                />
-                <Text style={styles.prefixText}>
-                  {method === 'phone' ? '+91' : ''}
-                </Text>
-                {method === 'phone' ? (
-                  <View style={styles.prefixDivider} />
-                ) : null}
-              </View>
-
-              <TextInput
-                style={styles.textInput}
-                placeholder={
-                  method === 'phone' ? '98251 44320' : 'name@example.com'
-                }
-                placeholderTextColor={C.muted}
-                value={contact}
-                onChangeText={setContact}
-                keyboardType={
-                  method === 'phone' ? 'phone-pad' : 'email-address'
-                }
-                autoCapitalize="none"
-                maxLength={method === 'phone' ? 10 : 80}
-              />
-
-              {isContactValid || contact.length > 0 ? (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={20}
-                  color={C.primary}
-                  style={styles.inputRightIcon}
-                />
-              ) : null}
-            </View>
-
-            {/* Unit link & Change action */}
-            <View style={styles.contactFooterRow}>
-              <View style={styles.unitTag}>
-                <Ionicons name="compass-outline" size={14} color={C.primary} />
-                <Text style={styles.unitText}>
-                  Linked with Surendranagar Sevak Unit
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => {
-                  if (otpSent) {
-                    setContact('');
-                    setOtpSent(false);
-                  } else {
-                    sendOtp();
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.changeLinkText}>
-                  {otpSent
-                    ? 'Change'
-                    : contact.length > 0
-                    ? 'Change'
-                    : 'Send OTP'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* ── Card 2: OTP Verification Card ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <View style={styles.iconTitleRow}>
-                <View
-                  style={[styles.stepIconWrap, { backgroundColor: C.secCont }]}
-                >
-                  <Ionicons name="keypad" size={15} color={C.secondary} />
-                </View>
-                <View>
-                  <Text style={styles.stepTitle}>Enter 6-Digit OTP</Text>
-                  <Text style={styles.stepTitleGu}>છ અંકનો ઓટીપી દાખલ કરો</Text>
-                </View>
-              </View>
-
-              <View
-                style={[styles.stepPill, { backgroundColor: C.surfaceHigh }]}
-              >
-                <Text style={styles.stepPillText}>Step 2 of 3</Text>
-              </View>
-            </View>
-
-            <Text style={styles.otpSubtitle}>
-              {`Sent to ${
-                contact
-                  ? `+91${contact.slice(0, 5)}•••${contact.slice(-2)}`
-                  : '+9198251•••20'
-              } via SMS & Community App.`}
-            </Text>
-
-            {/* 6 OTP Digit Boxes */}
-            <View style={styles.otpBoxesRow}>
-              {[0, 1, 2, 3, 4, 5].map(index => {
-                const val = otpCode[index];
-                return (
+          {/* ── Main Interactive Card ── */}
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.borderSubtle,
+                shadowColor: colors.primary,
+              },
+            ]}
+          >
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* STEP 1: EMAIL INPUT                                         */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {step === 'email' && (
+              <>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    {isGu ? 'નોંધાયેલ ઈમેલ' : 'Registered Email Address'}
+                  </Text>
                   <View
-                    key={index}
-                    style={[styles.otpBox, val !== '' && styles.otpBoxFilled]}
+                    style={[
+                      styles.inputRow,
+                      {
+                        backgroundColor:
+                          colors.surfaceSecondary || colors.surfaceSubtle,
+                        borderColor: isEmailValid
+                          ? colors.primary
+                          : colors.borderSubtle,
+                      },
+                    ]}
                   >
-                    <TextInput
-                      ref={otpInputRefs[index]}
-                      style={styles.otpInput}
-                      keyboardType="number-pad"
-                      maxLength={1}
-                      value={val}
-                      placeholder="—"
-                      placeholderTextColor={C.muted}
-                      onChangeText={text => handleOtpChange(text, index)}
-                      onKeyPress={e => handleOtpKeyPress(e, index)}
-                      selectTextOnFocus
+                    <Ionicons
+                      name="mail-outline"
+                      size={18}
+                      color={isEmailValid ? colors.primary : colors.textMuted}
+                      style={styles.inputLeftIcon}
                     />
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          color: colors.text,
+                          fontFamily: typography.fontFamilySans,
+                        },
+                      ]}
+                      placeholder="name@example.com"
+                      placeholderTextColor={colors.textMuted}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      editable={!busy}
+                    />
+                    {isEmailValid && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    )}
                   </View>
-                );
-              })}
-            </View>
+                </View>
 
-            {/* Timer & Resend SMS */}
-            <View style={styles.timerRow}>
-              <View style={styles.timerGroup}>
-                <Ionicons name="time-outline" size={15} color={C.muted} />
-                <Text style={styles.timerText}>
-                  {'Resend code in '}
-                  <Text style={styles.timerHighlight}>
-                    00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
-                  </Text>
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={sendOtp}
-                disabled={resendTimer > 0 || busy}
-                activeOpacity={0.7}
-              >
-                <Text
+                <TouchableOpacity
                   style={[
-                    styles.resendLink,
-                    resendTimer === 0
-                      ? { color: C.primary, fontWeight: '700' }
-                      : { color: C.muted },
+                    styles.submitBtn,
+                    {
+                      backgroundColor: isEmailValid
+                        ? colors.primary
+                        : colors.surfaceSecondary || colors.surfaceSubtle,
+                    },
                   ]}
+                  onPress={handleSendOtp}
+                  disabled={!isEmailValid || busy}
+                  activeOpacity={0.85}
                 >
-                  Resend SMS
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  {busy ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text
+                        style={[
+                          styles.submitBtnText,
+                          {
+                            color: isEmailValid ? '#ffffff' : colors.textMuted,
+                          },
+                        ]}
+                      >
+                        {isGu ? 'ઓટીપી મોકલો' : 'Send Verification Code'}
+                      </Text>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={17}
+                        color={isEmailValid ? '#ffffff' : colors.textMuted}
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
 
-            {/* WhatsApp Fallback Button */}
-            <TouchableOpacity
-              style={styles.whatsappBtn}
-              onPress={sendOtp}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="logo-whatsapp" size={17} color={C.whatsapp} />
-              <Text style={styles.whatsappBtnText}>
-                Send code via WhatsApp / વોટ્સએપ પર મેળવો
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ── Card 3: Create New Security PIN / Password ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <View style={styles.iconTitleRow}>
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* STEP 2: 6-DIGIT OTP (Shown ONLY after OTP is sent)          */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {step === 'otp' && (
+              <>
+                {/* Email Chip with Change Action */}
                 <View
                   style={[
-                    styles.stepIconWrap,
-                    { backgroundColor: C.primaryFixed },
+                    styles.emailPill,
+                    {
+                      backgroundColor:
+                        colors.surfaceSecondary || colors.surfaceSubtle,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
-                  <Ionicons
-                    name="shield-checkmark"
-                    size={15}
-                    color={C.primary}
-                  />
+                  <View style={styles.emailPillLeft}>
+                    <Ionicons name="mail" size={15} color={colors.primary} />
+                    <Text
+                      style={[styles.emailPillText, { color: colors.text }]}
+                      numberOfLines={1}
+                    >
+                      {email}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setStep('email')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text
+                      style={[styles.changeBtnText, { color: colors.primary }]}
+                    >
+                      {isGu ? 'બદલો' : 'Change'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <View>
-                  <Text style={styles.stepTitle}>Create New Security PIN</Text>
-                  <Text style={styles.stepTitleGu}>
-                    નવો ૪-અંકનો સુરક્ષા પિન બનાવો
+
+                {/* 6 Digit Inputs */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    {isGu ? '૬-અંકનો ઓટીપી દાખલ કરો' : '6-Digit OTP Code'}
                   </Text>
+                  <View style={styles.otpRow}>
+                    {[0, 1, 2, 3, 4, 5].map(index => {
+                      const val = otpCode[index];
+                      const isFilled = val !== '';
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.otpBox,
+                            {
+                              backgroundColor: isFilled
+                                ? colors.surface
+                                : colors.surfaceSecondary || colors.surfaceSubtle,
+                              borderColor: isFilled
+                                ? colors.primary
+                                : colors.borderSubtle,
+                            },
+                          ]}
+                        >
+                          <TextInput
+                            ref={otpInputRefs[index]}
+                            style={[
+                              styles.otpInput,
+                              {
+                                color: colors.primary,
+                                fontFamily: typography.fontFamilySans,
+                              },
+                            ]}
+                            keyboardType="number-pad"
+                            maxLength={1}
+                            value={val}
+                            placeholder="—"
+                            placeholderTextColor={colors.textMuted}
+                            onChangeText={text => handleOtpChange(text, index)}
+                            onKeyPress={e => handleOtpKeyPress(e, index)}
+                            selectTextOnFocus
+                            editable={!busy}
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            </View>
 
-            {/* New PIN Input */}
-            <View style={styles.credentialField}>
-              <Text style={styles.fieldLabel}>New 4-Digit PIN / નવો પિન</Text>
-              <View style={styles.inputWrap}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={17}
-                  color={C.muted}
-                  style={styles.inputLeftIcon}
-                />
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    { letterSpacing: showPassword ? 1 : 6 },
-                  ]}
-                  placeholder="• • • •"
-                  placeholderTextColor={C.muted}
-                  secureTextEntry={!showPassword}
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  autoCapitalize="none"
-                />
+                {/* Timer & Resend */}
+                <View style={styles.timerRow}>
+                  <Text style={[styles.timerText, { color: colors.textMuted }]}>
+                    {isGu ? 'ફરી મોકલવા માટે બાકી: ' : 'Resend code in '}
+                    <Text
+                      style={{ color: colors.text, fontWeight: '700' }}
+                    >
+                      00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
+                    </Text>
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={handleSendOtp}
+                    disabled={resendTimer > 0 || busy}
+                  >
+                    <Text
+                      style={[
+                        styles.resendBtnText,
+                        {
+                          color:
+                            resendTimer === 0 ? colors.primary : colors.textMuted,
+                          opacity: resendTimer === 0 ? 1 : 0.6,
+                        },
+                      ]}
+                    >
+                      {isGu ? 'ફરીથી ઓટીપી મોકલો' : 'Resend Code'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.inputRightIcon}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={19}
-                    color={C.muted}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Confirm PIN Input */}
-            <View style={styles.credentialField}>
-              <Text style={styles.fieldLabel}>
-                Confirm PIN / પિન પુષ્ટિ કરો
-              </Text>
-              <View style={styles.inputWrap}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={17}
-                  color={C.muted}
-                  style={styles.inputLeftIcon}
-                />
-                <TextInput
                   style={[
-                    styles.textInput,
-                    { letterSpacing: showPassword ? 1 : 6 },
+                    styles.submitBtn,
+                    {
+                      backgroundColor: isOtpComplete
+                        ? colors.primary
+                        : colors.surfaceSecondary || colors.surfaceSubtle,
+                    },
                   ]}
-                  placeholder="• • • •"
-                  placeholderTextColor={C.muted}
-                  secureTextEntry={!showPassword}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  autoCapitalize="none"
-                />
-                {passwordsMatch || confirmPassword.length >= 4 ? (
+                  onPress={handleVerifyOtp}
+                  disabled={!isOtpComplete || busy}
+                  activeOpacity={0.85}
+                >
+                  {busy ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text
+                        style={[
+                          styles.submitBtnText,
+                          {
+                            color: isOtpComplete ? '#ffffff' : colors.textMuted,
+                          },
+                        ]}
+                      >
+                        {isGu ? 'ઓટીપી ચકાસો' : 'Verify Code'}
+                      </Text>
+                      <Ionicons
+                        name="checkmark"
+                        size={18}
+                        color={isOtpComplete ? '#ffffff' : colors.textMuted}
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
+
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* STEP 3: NEW PASSWORD (OTP is HIDDEN, password is shown)     */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {step === 'password' && (
+              <>
+                {/* Verified Confirmation Pill */}
+                <View
+                  style={[
+                    styles.verifiedPill,
+                    { backgroundColor: `${colors.primary}15` },
+                  ]}
+                >
                   <Ionicons
                     name="checkmark-circle"
-                    size={20}
-                    color={C.primary}
-                    style={styles.inputRightIcon}
+                    size={16}
+                    color={colors.primary}
                   />
-                ) : null}
-              </View>
-            </View>
-
-            {/* Info callout */}
-            <View style={styles.infoCallout}>
-              <Ionicons
-                name="information-circle-outline"
-                size={17}
-                color={C.primary}
-              />
-              <Text style={styles.infoCalloutText}>
-                Use this PIN for instant village module check-ins and member
-                welfare claims.
-              </Text>
-            </View>
-          </View>
-
-          {/* ── Card 4: Community Trust & Sevak Assistance Banner ── */}
-          <View style={styles.supportBanner}>
-            <View style={styles.supportLeft}>
-              <View style={styles.supportAvatar}>
-                <Svg width={30} height={30} viewBox="0 0 100 100">
-                  <Circle cx={50} cy={50} r={48} fill="#ffeadf" />
-                  <Circle cx={40} cy={35} r={14} fill="#79573c" />
-                  <Circle cx={64} cy={40} r={11} fill="#006026" />
-                  <Path
-                    d="M22 82 C22 62 34 54 48 54 C60 54 70 64 72 82 Z"
-                    fill="#79573c"
-                  />
-                  <Path
-                    d="M52 82 C54 68 62 62 76 62 C84 62 90 70 92 82 Z"
-                    fill="#006026"
-                  />
-                </Svg>
-              </View>
-              <View style={styles.supportTextWrap}>
-                <Text style={styles.supportTitle}>
-                  Having trouble? / સહાયકની મદદ
-                </Text>
-                <Text style={styles.supportSub}>
-                  Call Sevak Desk: 1800-233-844 (Toll-Free)
-                </Text>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.supportCallBtn}
-              onPress={() => Linking.openURL('tel:1800233844').catch(() => {})}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="call" size={17} color="#fff" />
-            </TouchableOpacity>
-          </View>
-
-          {/* ── Primary Action Button ── */}
-          <View style={styles.actionSection}>
-            <TouchableOpacity
-              style={[styles.submitBtn, { backgroundColor: C.primary }]}
-              onPress={handleResetPassword}
-              disabled={busy}
-              activeOpacity={0.88}
-            >
-              {busy ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <View style={styles.submitBtnContentRow}>
-                  <Text style={styles.submitBtnText}>
-                    Reset Password & Login
+                  <Text
+                    style={[styles.verifiedPillText, { color: colors.primary }]}
+                  >
+                    {isGu
+                      ? `ઈમેલ ચકાસાયેલ છે (${email})`
+                      : `Verified for ${email}`}
                   </Text>
-                  <Text style={styles.submitBtnSub}>/ પાસવર્ડ બદલો</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={18}
-                    color="#fff"
-                    style={{ marginLeft: 4 }}
-                  />
                 </View>
-              )}
-            </TouchableOpacity>
 
-            {/* Back to Sign In */}
-            <TouchableOpacity
-              style={styles.backToLoginBtn}
-              onPress={onBack}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={15} color={C.onSurfaceVar} />
-              <Text style={styles.backToLoginText}>
-                Back to Sign In / પાછા લોગિન પર જાઓ
-              </Text>
-            </TouchableOpacity>
+                {/* New Password */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    {isGu ? 'નવો પાસવર્ડ' : 'New Password'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      {
+                        backgroundColor:
+                          colors.surfaceSecondary || colors.surfaceSubtle,
+                        borderColor: isPasswordValid
+                          ? colors.primary
+                          : colors.borderSubtle,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={18}
+                      color={isPasswordValid ? colors.primary : colors.textMuted}
+                      style={styles.inputLeftIcon}
+                    />
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          color: colors.text,
+                          fontFamily: typography.fontFamilySans,
+                        },
+                      ]}
+                      placeholder={
+                        isGu ? 'ઓછામાં ઓછા ૪ અક્ષર' : 'At least 4 characters'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showPassword}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      autoCapitalize="none"
+                      editable={!busy}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeBtn}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons
+                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                        size={19}
+                        color={colors.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Confirm Password */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    {isGu ? 'પાસવર્ડની પુષ્ટિ કરો' : 'Confirm New Password'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      {
+                        backgroundColor:
+                          colors.surfaceSecondary || colors.surfaceSubtle,
+                        borderColor: passwordsMatch
+                          ? colors.primary
+                          : confirmPassword.length > 0 && !passwordsMatch
+                          ? colors.error || '#dc2626'
+                          : colors.borderSubtle,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={18}
+                      color={passwordsMatch ? colors.primary : colors.textMuted}
+                      style={styles.inputLeftIcon}
+                    />
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          color: colors.text,
+                          fontFamily: typography.fontFamilySans,
+                        },
+                      ]}
+                      placeholder={
+                        isGu ? 'ફરીથી પાસવર્ડ દાખલ કરો' : 'Re-enter new password'
+                      }
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showConfirmPassword}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      autoCapitalize="none"
+                      editable={!busy}
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      style={styles.eyeBtn}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons
+                        name={
+                          showConfirmPassword
+                            ? 'eye-off-outline'
+                            : 'eye-outline'
+                        }
+                        size={19}
+                        color={colors.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={[
+                    styles.submitBtn,
+                    {
+                      backgroundColor: passwordsMatch
+                        ? colors.primary
+                        : colors.surfaceSecondary || colors.surfaceSubtle,
+                    },
+                  ]}
+                  onPress={handleResetPassword}
+                  disabled={!passwordsMatch || busy}
+                  activeOpacity={0.85}
+                >
+                  {busy ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text
+                        style={[
+                          styles.submitBtnText,
+                          {
+                            color: passwordsMatch ? '#ffffff' : colors.textMuted,
+                          },
+                        ]}
+                      >
+                        {isGu ? 'પાસવર્ડ બદલો અને લોગિન કરો' : 'Reset Password & Login'}
+                      </Text>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={17}
+                        color={passwordsMatch ? '#ffffff' : colors.textMuted}
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
-          {/* ── Trust Seal / Footer Dignity Branding ── */}
-          <View style={styles.footerBranding}>
-            <View style={styles.shieldBadge}>
-              <Ionicons name="shield-checkmark" size={14} color={C.primary} />
-              <Text style={styles.shieldText}>
-                THH VILLAGE SHIELD • 256-BIT ENCRYPTED
-              </Text>
-            </View>
-            <Text style={styles.copyrightText}>
-              The Helping Hands © Gram Vikas Suraksha Trust
+          {/* ── Minimalist Back to Sign In Link ── */}
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={onBack}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={16} color={colors.primary} />
+            <Text style={[styles.backBtnText, { color: colors.primary }]}>
+              {isGu ? 'પાછા લોગિન પર જાઓ' : 'Back to Sign In'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Minimalist Stylesheet ──────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
-  topHeader: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#00000010',
-  },
-  topLeftGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  brandIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 14,
-  },
-  brandSubtitle: {
-    fontSize: 9,
-    lineHeight: 10,
-  },
-  topRightGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  langPill: {
-    flexDirection: 'row',
-    borderRadius: 99,
-    padding: 2,
-  },
-  langSegment: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 99,
-  },
-  langSegmentActive: {
-    backgroundColor: C.white,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  langSegmentText: {
-    fontSize: 11,
-    color: C.onSurfaceVar,
-    fontWeight: '500',
-  },
-  langSegmentTextActive: {
-    color: C.primary,
-    fontWeight: '700',
-  },
-  treeIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: C.surfaceHigh,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scroll: {
+  wrap: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 28,
-    gap: 14,
+    paddingBottom: 36,
   },
 
-  // Hero Section
-  heroSection: {
+  // Minimalist Hero
+  headerHero: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
-  badgeContainer: {
-    position: 'relative',
-    marginBottom: 10,
-  },
-  badgeOuterRing: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: C.surfaceHigh,
+  treeCircle: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 8,
   },
-  badgeInnerCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: C.primaryCont,
+  kickerPill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-    shadowColor: C.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginBottom: 8,
   },
-  verifiedShield: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: C.primaryFixed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-  },
-  headline: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: C.onSurface,
-    letterSpacing: -0.3,
-  },
-  subHeadline: {
-    fontSize: 14,
+  kickerText: {
+    fontSize: 10,
     fontWeight: '700',
-    color: C.primary,
-    marginTop: 2,
+    letterSpacing: 0.8,
   },
-  instructions: {
-    fontSize: 12,
-    color: C.onSurfaceVar,
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  heroSub: {
+    fontSize: 13,
     textAlign: 'center',
     marginTop: 4,
-    lineHeight: 17,
-    paddingHorizontal: 16,
+    lineHeight: 18,
+    paddingHorizontal: 20,
   },
 
-  // Toggle pills
-  methodToggleWrap: {
-    flexDirection: 'row',
-    backgroundColor: C.surfaceHigh,
-    padding: 3,
-    borderRadius: 99,
-  },
-  methodBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 9,
-    borderRadius: 99,
-  },
-  methodBtnActive: {
-    backgroundColor: C.white,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  methodBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: C.onSurfaceVar,
-  },
-  methodBtnTextActive: {
-    color: C.primary,
-    fontWeight: '700',
-  },
-
-  // Card general
+  // Main Card
   card: {
-    backgroundColor: C.white,
     borderRadius: 16,
-    padding: 14,
-    gap: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  cardLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: C.onSurface,
-  },
-  cardLabelGu: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: C.onSurfaceVar,
-  },
-  verifiedMemberPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: `${C.primary}15`,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 99,
-  },
-  verifiedMemberText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: C.primary,
+    padding: 18,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 3,
+    gap: 16,
   },
 
-  // Input Wrap
-  inputWrap: {
+  // Form Fields
+  inputGroup: {
+    gap: 6,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.surfaceLow,
-    borderRadius: 12,
+    borderRadius: 10,
     height: 48,
     paddingHorizontal: 12,
-    position: 'relative',
-  },
-  inputPrefix: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginRight: 6,
-  },
-  prefixText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: C.onSurface,
-  },
-  prefixDivider: {
-    width: 1,
-    height: 18,
-    backgroundColor: C.outlineVar,
+    borderWidth: 1,
   },
   inputLeftIcon: {
     marginRight: 8,
   },
-  inputRightIcon: {
-    position: 'absolute',
-    right: 12,
-  },
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: C.onSurface,
+    height: 48,
     paddingVertical: 0,
   },
-
-  // Contact Footer
-  contactFooterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 2,
-  },
-  unitTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    flex: 1,
-  },
-  unitText: {
-    fontSize: 11,
-    color: C.onSurfaceVar,
-    flexShrink: 1,
-  },
-  changeLinkText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: C.primary,
-  },
-  sendOtpBtn: {
-    backgroundColor: C.surfaceHigh,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  sendOtpBtnActive: {
-    backgroundColor: C.primary,
-  },
-  sendOtpBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#fff',
+  eyeBtn: {
+    padding: 8,
   },
 
-  // Step Header
-  iconTitleRow: {
+  // Primary Action Button
+  submitBtn: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepIconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    height: 48,
+    borderRadius: 10,
+    marginTop: 2,
   },
-  stepTitle: {
-    fontSize: 13,
+  submitBtnText: {
+    fontSize: 14,
     fontWeight: '700',
-    color: C.onSurface,
-    lineHeight: 16,
-  },
-  stepTitleGu: {
-    fontSize: 11,
-    color: C.onSurfaceVar,
-    lineHeight: 13,
-  },
-  stepPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 99,
-  },
-  stepPillText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: C.secondary,
-  },
-  otpSubtitle: {
-    fontSize: 12,
-    color: C.onSurfaceVar,
   },
 
-  // 6-Box OTP
-  otpBoxesRow: {
+  // OTP 6-Digit Row
+  otpRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 6,
-    paddingVertical: 4,
+    marginTop: 4,
   },
   otpBox: {
     flex: 1,
-    height: 52,
+    height: 50,
     borderRadius: 10,
-    backgroundColor: C.surfaceLow,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  otpBoxFilled: {
-    borderColor: C.primary,
-    backgroundColor: C.white,
   },
   otpInput: {
     width: '100%',
     height: '100%',
     textAlign: 'center',
     fontSize: 20,
-    fontWeight: '800',
-    color: C.primary,
-  },
-  otpCursorDot: {
-    position: 'absolute',
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: C.outlineVar,
+    fontWeight: '700',
   },
 
-  // Timer Row
+  // Timer & Resend
   timerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 2,
-  },
-  timerGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
   },
   timerText: {
     fontSize: 12,
-    color: C.onSurfaceVar,
   },
-  timerHighlight: {
-    fontWeight: '700',
-    color: C.onSurface,
-  },
-  resendLink: {
+  resendBtnText: {
     fontSize: 12,
-    fontWeight: '500',
   },
 
-  // WhatsApp Button
-  whatsappBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: C.surfaceHigh,
-    height: 42,
-    borderRadius: 10,
-    marginTop: 2,
-  },
-  whatsappBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: C.primary,
-  },
-
-  // Credential Field
-  credentialField: {
-    gap: 4,
-  },
-  fieldLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: C.onSurfaceVar,
-  },
-  infoCallout: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: C.surfaceLow,
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 2,
-  },
-  infoCalloutText: {
-    flex: 1,
-    fontSize: 11,
-    color: C.onSurfaceVar,
-    lineHeight: 15,
-  },
-
-  // Support Banner
-  supportBanner: {
+  // Email Pill Summary
+  emailPill: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: C.surfaceCont,
-    padding: 12,
-    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
   },
-  supportLeft: {
+  emailPillLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
+    marginRight: 8,
   },
-  supportAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: C.white,
-    alignItems: 'center',
-    justifyContent: 'center',
+  emailPillText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
-  supportTextWrap: {
-    flex: 1,
-  },
-  supportTitle: {
+  changeBtnText: {
     fontSize: 12,
     fontWeight: '700',
-    color: C.onSurface,
-  },
-  supportSub: {
-    fontSize: 11,
-    color: C.onSurfaceVar,
-    marginTop: 1,
-  },
-  supportCallBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: C.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
   },
 
-  // Submit Section
-  actionSection: {
-    gap: 10,
-    paddingTop: 4,
-  },
-  submitBtn: {
-    height: 52,
-    borderRadius: 14,
+  // Verified Badge
+  verifiedPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 6,
-    elevation: 3,
-    shadowColor: C.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
-  submitBtnContentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitBtnText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#fff',
-  },
-  submitBtnSub: {
-    fontSize: 13,
-    color: '#ffffffcc',
-  },
-  backToLoginBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 6,
-  },
-  backToLoginText: {
-    fontSize: 13,
-    color: C.onSurfaceVar,
+  verifiedPillText: {
+    fontSize: 12,
     fontWeight: '600',
   },
 
-  // Footer
-  footerBranding: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    gap: 4,
-    opacity: 0.85,
-  },
-  shieldBadge: {
+  // Back to Sign In
+  backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 18,
+    paddingVertical: 8,
   },
-  shieldText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: C.primary,
-    letterSpacing: 0.6,
-  },
-  copyrightText: {
-    fontSize: 9,
-    color: C.muted,
+  backBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

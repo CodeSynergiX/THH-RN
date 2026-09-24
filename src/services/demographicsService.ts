@@ -1,6 +1,6 @@
 import { defaultApiClient } from './apiClient';
 import { Category } from '../models/category.model';
-import { District } from '../models/demographics.model';
+import { District, NearestLocationResult } from '../models/demographics.model';
 
 export const DEFAULT_CATEGORIES: Category[] = [
   {
@@ -604,6 +604,21 @@ export class DemographicsService {
       return DEFAULT_DISTRICTS;
     } catch {
       return DEFAULT_DISTRICTS;
+    }
+  }
+
+  async getNearestLocation(lat: number, lng: number): Promise<NearestLocationResult | null> {
+    try {
+      const res = await defaultApiClient.get<{
+        success: boolean;
+        data: NearestLocationResult;
+      }>(`/locations/nearest?lat=${lat}&lng=${lng}`);
+      if (res?.success && res.data) {
+        return res.data;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 }

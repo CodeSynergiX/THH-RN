@@ -56,6 +56,27 @@ export class ApplicationService {
   }
 
   /**
+   * Upload an application document or image (base64 or multipart).
+   */
+  async uploadFile(payload: {
+    file_base64?: string;
+    file_name?: string;
+    type?: string;
+  }) {
+    return defaultApiClient.post<{
+      success: boolean;
+      message?: string;
+      data: {
+        path: string;
+        url: string;
+        name: string;
+        size: number;
+        mime_type: string;
+      };
+    }>('/uploads', payload);
+  }
+
+  /**
    * Track application by Case Number (e.g. THH-2026-00001).
    */
   async trackApplication(

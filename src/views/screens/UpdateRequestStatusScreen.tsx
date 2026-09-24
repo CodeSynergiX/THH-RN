@@ -818,14 +818,19 @@ export const UpdateRequestStatusScreen: React.FC<Props> = ({
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
+          style={{ flex: 1 }}
           contentContainerStyle={[
             styles.scrollContent,
-            isReadOnly ? { paddingBottom: 28 } : { paddingBottom: 110 },
+            { flexGrow: 1 },
+            isReadOnly ? { paddingBottom: 40 } : { paddingBottom: 220 },
           ]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
         >
           {/* Helper Banner */}
           <View

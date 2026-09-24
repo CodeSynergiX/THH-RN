@@ -28,6 +28,8 @@ export interface AuthUser {
   helper_status?: 'pending' | 'approved' | 'rejected' | null;
   on_duty?: boolean;
   is_active?: boolean;
+  email_verified?: boolean;
+  email_verified_at?: string | null;
 }
 
 export const authService = {
@@ -47,12 +49,18 @@ export const authService = {
   async register(payload: {
     first_name: string;
     last_name: string;
-    email: string;
+    email?: string;
     phone: string;
     password: string;
     password_confirmation: string;
     role?: 'citizen' | 'mentor' | 'volunteer';
     locale?: string;
+    email_verified?: boolean;
+    domains?: string[];
+    availability?: string;
+    district_id?: number | null;
+    taluka_id?: number | null;
+    village_id?: number | null;
   }) {
     return defaultApiClient.post<{
       success: boolean;
@@ -94,7 +102,8 @@ export const authService = {
   async resetPasswordWithOtp(payload: {
     email?: string;
     phone?: string;
-    code: string;
+    code?: string;
+    token?: string;
     password: string;
     password_confirmation: string;
     purpose?: string;

@@ -14,6 +14,11 @@ export interface ColorTokens {
   textInverse: string;
   border: string;
   borderSubtle: string;
+  backgroundSecondary?: string;
+  surfaceSecondary?: string;
+  borderSecondary?: string;
+  secondaryBg?: string;
+  secondaryBorder?: string;
   statusReceived: string;
   statusVerification: string;
   statusCategorised: string;

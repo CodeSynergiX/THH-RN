@@ -12,10 +12,10 @@ const AUTH_TOKEN_KEY = '@thh_auth_token';
 // Automatically detect emulator vs host
 const getDefaultBaseUrl = () => {
   if (Platform.OS === 'android') {
-    return 'https://containing-substance-competitive-bias.trycloudflare.com/api/v1';
+    return 'https://history-internet-medium-boolean.trycloudflare.com/api/v1';
     // return 'https://thhapi.codesynergix.com/api/v1';
   }
-  return 'https://containing-substance-competitive-bias.trycloudflare.com/api/v1';
+  return 'https://history-internet-medium-boolean.trycloudflare.com/api/v1';
   // return 'https://thhapi.codesynergix.com/api/v1';
 };
 

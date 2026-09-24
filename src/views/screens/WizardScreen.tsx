@@ -8,6 +8,8 @@ import {
   TextInput,
   ActivityIndicator,
   Linking,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useWizardViewModel } from '../../viewmodels/useWizardViewModel';
 import { useAppTheme } from '../../theme/ThemeContext';
@@ -210,9 +212,21 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
 
       <StepIndicator currentStep={step} totalSteps={5} />
 
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { padding: spacing.md }]}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { padding: spacing.md, flexGrow: 1, paddingBottom: 160 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
+        >
         {/* Step 1: Category Selection */}
         {step === 1 && (
           <View style={styles.stepContainer}>
@@ -1477,8 +1491,9 @@ export const WizardScreen: React.FC<WizardScreenProps> = ({
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
-  );
+    </KeyboardAvoidingView>
+  </View>
+);
 };
 
 const styles = StyleSheet.create({

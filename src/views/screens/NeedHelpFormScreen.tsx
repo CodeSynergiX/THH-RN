@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,10 @@ import { useTranslation } from '../../i18n/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { applicationService } from '../../services/applicationService';
+import { demographicsService } from '../../services/demographicsService';
 import { captureLocation } from '../../services/deviceCapture';
+import { captureFromCamera, pickFromGallery } from '../../services/imagePickerService';
+import { District, Taluka, Village } from '../../models/demographics.model';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import { configService } from '../../services/configService';
 import { CanopyHeader } from '../components/CanopyHeader';
@@ -29,15 +32,6 @@ interface Props {
   onSubmitted: (caseNo: string) => void;
   onChangeSector: () => void;
 }
-
-const TALUKA_OPTIONS = [
-  { key: 'chikhli', en: 'Chikhli, Navsari', gu: 'ચીખલી, નવસારી' },
-  { key: 'gandevi', en: 'Gandevi, Navsari', gu: 'ગણદેવી, નવસારી' },
-  { key: 'jalalpore', en: 'Jalalpore, Navsari', gu: 'જલાલપોર, નવસારી' },
-  { key: 'bansda', en: 'Bansda, Navsari', gu: 'વાંસદા, નવસારી' },
-  { key: 'mahuva', en: 'Mahuva, Surat', gu: 'મહુવા, સુરત' },
-  { key: 'navsari_city', en: 'Navsari City', gu: 'નવસારી શહેર' },
-];
 
 export const NeedHelpFormScreen: React.FC<Props> = ({
   moduleSlug,
@@ -54,18 +48,38 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
 
   const [name, setName] = useState(user?.name || 'Rajeshkumar D. Patel');
   const [editingName, setEditingName] = useState(false);
-  const [selectedTalukaKey, setSelectedTalukaKey] = useState(
-    TALUKA_OPTIONS[0].key,
+
+  // Dynamic Demographics Master Data State
+  const [districtsList, setDistrictsList] = useState<District[]>([]);
+  const [districtId, setDistrictId] = useState<number | null>(
+    user?.district_id || user?.district?.id || null,
   );
-  const [showTalukaPicker, setShowTalukaPicker] = useState(false);
+  const [talukaId, setTalukaId] = useState<number | null>(
+    user?.taluka_id || user?.taluka?.id || null,
+  );
+  const [villageId, setVillageId] = useState<number | null>(
+    user?.village_id || user?.village?.id || null,
+  );
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationTab, setLocationTab] = useState<'district' | 'taluka' | 'village'>('district');
+  const [locationSearch, setLocationSearch] = useState('');
+
   const [message, setMessage] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
-  // Real speech-to-text — appends each new final result to the message field
   const [locating, setLocating] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+
+  // Document attachments state
   const [docs, setDocs] = useState<
-    Array<{ name: string; uri: string; type: string; size: string }>
+    Array<{
+      name: string;
+      uri: string;
+      type: string;
+      size: string;
+      base64?: string;
+      path?: string;
+    }>
   >([
     {
       name: 'Identity_Proof_Front.pdf',
@@ -80,11 +94,90 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
       size: '840 KB',
     },
   ]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [showDocPickerModal, setShowDocPickerModal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sectorTitle, setSectorTitle] = useState(
     moduleTitle || 'Government Schemes',
   );
   const [registeredCaseNo, setRegisteredCaseNo] = useState<string | null>(null);
+
+  // Load master districts list
+  useEffect(() => {
+    demographicsService
+      .getDistricts()
+      .then(dists => {
+        if (dists && dists.length > 0) {
+          setDistrictsList(dists);
+          if (!districtId) {
+            const navsari = dists.find(d =>
+              d.name_en?.toLowerCase().includes('navsari'),
+            );
+            if (navsari) {
+              setDistrictId(navsari.id);
+            } else {
+              setDistrictId(dists[0].id);
+            }
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load districts in NeedHelpFormScreen:', err);
+      });
+  }, []);
+
+  // Cascading location objects
+  const selectedDistrict = useMemo(
+    () => districtsList.find(d => d.id === districtId),
+    [districtsList, districtId],
+  );
+  const availableTalukas = useMemo(
+    () => selectedDistrict?.talukas || [],
+    [selectedDistrict],
+  );
+  const selectedTaluka = useMemo(
+    () => availableTalukas.find(item => item.id === talukaId),
+    [availableTalukas, talukaId],
+  );
+  const availableVillages = useMemo(
+    () => selectedTaluka?.villages || [],
+    [selectedTaluka],
+  );
+  const selectedVillage = useMemo(
+    () => availableVillages.find(v => v.id === villageId),
+    [availableVillages, villageId],
+  );
+
+  const locationDisplayText = useMemo(() => {
+    const parts: string[] = [];
+    if (selectedVillage) {
+      parts.push(
+        language === 'gu'
+          ? selectedVillage.name_gu
+          : selectedVillage.name_en || selectedVillage.name_gu,
+      );
+    }
+    if (selectedTaluka) {
+      parts.push(
+        language === 'gu'
+          ? selectedTaluka.name_gu
+          : selectedTaluka.name_en || selectedTaluka.name_gu,
+      );
+    }
+    if (selectedDistrict) {
+      parts.push(
+        language === 'gu'
+          ? selectedDistrict.name_gu
+          : selectedDistrict.name_en || selectedDistrict.name_gu,
+      );
+    }
+    if (parts.length > 0) {
+      return parts.join(', ');
+    }
+    return language === 'gu'
+      ? 'ચીખલી, નવસારી'
+      : 'Chikhli, Navsari';
+  }, [selectedVillage, selectedTaluka, selectedDistrict, language]);
 
   useEffect(() => {
     if (user?.name) {
@@ -105,23 +198,70 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
     }
   }, [moduleSlug, moduleTitle]);
 
+  /**
+   * GPS Auto-Detect with Nearest Master Data Assignment
+   */
   const detectGPS = async () => {
     setLocating(true);
     try {
       const pos = await captureLocation();
       if (!pos) {
         showToast(
-          t(
-            'stitch.form.location_hint',
-            'Allow location permission or submit with selected Taluka.',
-          ),
+          language === 'gu'
+            ? 'GPS અક્ષ્ય નહીં. ભૌગોલિક સ્થાન ચાલુ છે?'
+            : 'Allow location permission or select from location list.',
           'warning',
-          t('stitch.form.location_unavailable', 'Location unavailable'),
+          language === 'gu' ? 'GPS અનુપલબ્ધ' : 'Location unavailable',
         );
         return;
       }
       setLat(pos.lat);
       setLng(pos.lng);
+
+      // Fetch nearest village from backend master API
+      const nearest = await demographicsService.getNearestLocation(pos.lat, pos.lng);
+      if (nearest) {
+        if (nearest.district) {
+          setDistrictId(nearest.district.id);
+        }
+        if (nearest.taluka) {
+          setTalukaId(nearest.taluka.id);
+        }
+        if (nearest.village) {
+          setVillageId(nearest.village.id);
+        }
+
+        const vName =
+          language === 'gu'
+            ? nearest.village.name_gu
+            : nearest.village.name_en || nearest.village.name_gu;
+        const tName = nearest.taluka
+          ? language === 'gu'
+            ? nearest.taluka.name_gu
+            : nearest.taluka.name_en || nearest.taluka.name_gu
+          : '';
+        const distKm = nearest.distance_km;
+
+        showToast(
+          language === 'gu'
+            ? `નજીકનું સ્થળ: ${vName}${tName ? ', ' + tName : ''} (${distKm} km)`
+            : `Nearest location: ${vName}${tName ? ', ' + tName : ''} (${distKm} km away)`,
+          'success',
+          language === 'gu' ? 'GPS સ્થળ મળ્યું' : 'Location Assigned',
+        );
+      } else {
+        showToast(
+          language === 'gu'
+            ? 'GPS સ્થાન નોંધાયું.'
+            : 'GPS coordinates recorded.',
+          'info',
+        );
+      }
+    } catch {
+      showToast(
+        language === 'gu' ? 'GPS મેળવી શકાયું નહીં.' : 'Failed to detect location.',
+        'error',
+      );
     } finally {
       setLocating(false);
     }
@@ -170,12 +310,106 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
     }
   };
 
-  const addDocument = () => {
-    const stamp = `Doc_${Date.now().toString().slice(-4)}.pdf`;
-    setDocs(prev => [
-      ...prev,
-      { name: stamp, uri: '', type: 'application/pdf', size: '1.1 MB' },
-    ]);
+  const handleAddDocumentFromCamera = async () => {
+    setShowDocPickerModal(false);
+    try {
+      const media = await captureFromCamera();
+      if (!media) return;
+
+      setUploadingDoc(true);
+      let serverPath = '';
+      if (media.base64) {
+        try {
+          const res = await applicationService.uploadFile({
+            file_base64: media.base64,
+            file_name: media.fileName,
+            type: 'required_doc',
+          });
+          if (res.data?.path) {
+            serverPath = res.data.path;
+          }
+        } catch (e) {
+          console.warn('Direct upload fallback to inline base64:', e);
+        }
+      }
+
+      setDocs(prev => [
+        ...prev,
+        {
+          name: media.fileName,
+          uri: media.uri,
+          type: media.type,
+          size: media.formattedSize,
+          base64: media.base64,
+          path: serverPath,
+        },
+      ]);
+      showToast(
+        language === 'gu'
+          ? 'દસ્તાવેજ સફળતાપૂર્વક ઉમેરાયો.'
+          : 'Document attached successfully.',
+        'success',
+      );
+    } catch {
+      showToast(
+        language === 'gu' ? 'ફોટો લઈ શકાયો નહીં.' : 'Failed to capture photo.',
+        'error',
+      );
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleAddDocumentFromGallery = async () => {
+    setShowDocPickerModal(false);
+    try {
+      const media = await pickFromGallery();
+      if (!media) return;
+
+      setUploadingDoc(true);
+      let serverPath = '';
+      if (media.base64) {
+        try {
+          const res = await applicationService.uploadFile({
+            file_base64: media.base64,
+            file_name: media.fileName,
+            type: 'required_doc',
+          });
+          if (res.data?.path) {
+            serverPath = res.data.path;
+          }
+        } catch (e) {
+          console.warn('Direct upload fallback to inline base64:', e);
+        }
+      }
+
+      setDocs(prev => [
+        ...prev,
+        {
+          name: media.fileName,
+          uri: media.uri,
+          type: media.type,
+          size: media.formattedSize,
+          base64: media.base64,
+          path: serverPath,
+        },
+      ]);
+      showToast(
+        language === 'gu'
+          ? 'દસ્તાવેજ સફળતાપૂર્વક ઉમેરાયો.'
+          : 'Document attached successfully.',
+        'success',
+      );
+    } catch {
+      showToast(
+        language === 'gu'
+          ? 'દસ્તાવેજ પસંદ કરી શકાયો નહીં.'
+          : 'Failed to pick document from gallery.',
+        'error',
+      );
+    } finally {
+      setUploadingDoc(false);
+    }
   };
 
   const removeDoc = (index: number) => {
@@ -204,13 +438,20 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
         name: name.trim(),
         email: user?.email || undefined,
         phone: user?.phone || undefined,
+        district_id: districtId || undefined,
+        taluka_id: talukaId || undefined,
+        village_id: villageId || undefined,
         lat: lat || undefined,
         lng: lng || undefined,
         documents: docs.map(d => ({
-          document_type: 'application_document',
-          file_path: d.name,
+          document_type: 'required_doc',
+          file_path: d.path || d.name,
           original_name: d.name,
-          mime_type: d.type,
+          type: 'required_doc',
+          path: d.path || d.name,
+          name: d.name,
+          base64: d.base64,
+          size: d.size,
         })),
       });
       setRegisteredCaseNo(app.case_no);
@@ -251,11 +492,15 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 220 }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
         >
           {/* Subtle Tree Canopy Decorative Banner */}
           <View style={styles.brandBanner}>
@@ -540,34 +785,41 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
               </TouchableOpacity>
             </View>
 
-            {(() => {
-              const currentTaluka =
-                TALUKA_OPTIONS.find(item => item.key === selectedTalukaKey) ||
-                TALUKA_OPTIONS[0];
-              return (
-                <TouchableOpacity
-                  onPress={() => setShowTalukaPicker(true)}
-                  style={[
-                    styles.talukaSelect,
-                    {
-                      backgroundColor: colors.surfaceSubtle,
-                      borderColor: colors.border,
-                    },
-                  ]}
+            <TouchableOpacity
+              onPress={() => {
+                setLocationTab(
+                  villageId ? 'village' : talukaId ? 'village' : districtId ? 'taluka' : 'district',
+                );
+                setLocationSearch('');
+                setShowLocationModal(true);
+              }}
+              style={[
+                styles.talukaSelect,
+                {
+                  backgroundColor: colors.surfaceSubtle,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text
+                  style={[styles.talukaSelectText, { color: colors.text }]}
+                  numberOfLines={1}
                 >
-                  <Text
-                    style={[styles.talukaSelectText, { color: colors.text }]}
-                  >
-                    {language === 'gu' ? currentTaluka.gu : currentTaluka.en}
+                  {locationDisplayText}
+                </Text>
+                {Boolean(selectedVillage?.pincode) && (
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                    {language === 'gu' ? 'પિનકોડ:' : 'Pincode:'} {selectedVillage?.pincode}
                   </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={colors.textMuted}
-                  />
-                </TouchableOpacity>
-              );
-            })()}
+                )}
+              </View>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
           </View>
 
           {/* 4. Need Description with Voice Dictation */}
@@ -676,7 +928,8 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
 
             {/* Upload trigger button */}
             <TouchableOpacity
-              onPress={addDocument}
+              onPress={() => setShowDocPickerModal(true)}
+              disabled={uploadingDoc}
               style={[
                 styles.uploadBox,
                 {
@@ -688,11 +941,15 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
               <View
                 style={[styles.cloudIcon, { backgroundColor: colors.surface }]}
               >
-                <Ionicons
-                  name="cloud-upload"
-                  size={24}
-                  color={colors.primary}
-                />
+                {uploadingDoc ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Ionicons
+                    name="cloud-upload"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
               </View>
               <Text style={[styles.uploadTitle, { color: colors.text }]}>
                 {language === 'gu'
@@ -700,9 +957,13 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                   : 'Tap to add Identity Proof, Ration Card, or Income Proof'}
               </Text>
               <Text style={[styles.uploadSub, { color: colors.textMuted }]}>
-                {language === 'gu'
-                  ? 'પીડીએફ અથવા ફોટો અપલોડ કરો (PDF, JPG)'
-                  : 'Upload PDF or JPG documents'}
+                {uploadingDoc
+                  ? language === 'gu'
+                    ? 'અપલોડ થઈ રહ્યું છે...'
+                    : 'Uploading document...'
+                  : language === 'gu'
+                  ? 'કેમેરા અથવા ગેલેરીમાંથી ફોટો/દસ્તાવેજ પસંદ કરો'
+                  : 'Choose from Camera or Gallery'}
               </Text>
             </TouchableOpacity>
 
@@ -855,45 +1116,629 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
         </View>
       </KeyboardAvoidingView>
 
-      {/* Taluka Selector Modal */}
-      <Modal visible={showTalukaPicker} transparent animationType="fade">
-        <View style={styles.modalBackdrop}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              {language === 'gu' ? 'તાલુકો પસંદ કરો' : 'Select Taluka'}
+      {/* Document Source Picker Modal (Camera vs Gallery) */}
+      <Modal
+        visible={showDocPickerModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDocPickerModal(false)}
+      >
+        <View style={styles.modalOverlayBottom}>
+          <View
+            style={[
+              styles.photoSheetContent,
+              { backgroundColor: colors.surface },
+            ]}
+          >
+            <View style={styles.sheetHandle} />
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>
+              {language === 'gu' ? 'દસ્તાવેજ અપલોડ કરો' : 'Attach Document'}
             </Text>
-            {TALUKA_OPTIONS.map(item => (
+            <Text style={[styles.sheetSub, { color: colors.textMuted }]}>
+              {language === 'gu'
+                ? 'ઓળખ પુરાવો અથવા રેશન કાર્ડ માટે સ્ત્રોત પસંદ કરો:'
+                : 'Select source for ID proof, ration card, or certificate:'}
+            </Text>
+
+            <View style={styles.sheetActionRow}>
               <TouchableOpacity
-                key={item.key}
+                onPress={handleAddDocumentFromCamera}
                 style={[
-                  styles.talukaItem,
-                  selectedTalukaKey === item.key && {
-                    backgroundColor: colors.primaryContainer,
+                  styles.sheetActionBtn,
+                  { backgroundColor: colors.surfaceSubtle },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.sheetActionIconCircle,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Ionicons name="camera" size={24} color="#ffffff" />
+                </View>
+                <Text style={[styles.sheetActionBtnTitle, { color: colors.text }]}>
+                  {language === 'gu' ? 'કેમેરાથી ફોટો' : 'Camera'}
+                </Text>
+                <Text
+                  style={[
+                    styles.sheetActionBtnSub,
+                    { color: colors.textMuted },
+                  ]}
+                >
+                  {language === 'gu' ? 'નવો ફોટો પાડો' : 'Take a photo'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleAddDocumentFromGallery}
+                style={[
+                  styles.sheetActionBtn,
+                  { backgroundColor: colors.surfaceSubtle },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.sheetActionIconCircle,
+                    { backgroundColor: colors.secondary },
+                  ]}
+                >
+                  <Ionicons name="images" size={24} color="#ffffff" />
+                </View>
+                <Text style={[styles.sheetActionBtnTitle, { color: colors.text }]}>
+                  {language === 'gu' ? 'ગેલેરીમાંથી' : 'Gallery'}
+                </Text>
+                <Text
+                  style={[
+                    styles.sheetActionBtnSub,
+                    { color: colors.textMuted },
+                  ]}
+                >
+                  {language === 'gu' ? 'ફોટો પસંદ કરો' : 'Choose existing'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setShowDocPickerModal(false)}
+              style={[
+                styles.cancelModalBtn,
+                { backgroundColor: colors.surfaceSubtle },
+              ]}
+            >
+              <Text style={[styles.cancelModalText, { color: colors.text }]}>
+                {language === 'gu' ? 'રદ કરો' : 'Cancel'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 3-Tier District, Taluka & Village Location Picker Modal */}
+      <Modal
+        visible={showLocationModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <View style={styles.modalOverlayBottom}>
+          <View
+            style={[
+              styles.locationModalCard,
+              { backgroundColor: colors.surface },
+            ]}
+          >
+            <View style={styles.sheetHandle} />
+
+            {/* Header */}
+            <View style={styles.modalHeaderRow}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
+                <View
+                  style={[
+                    styles.cottageIconBox,
+                    {
+                      backgroundColor: colors.primaryContainer,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                    },
+                  ]}
+                >
+                  <Ionicons name="location" size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                  {language === 'gu'
+                    ? 'સ્થળ અને ગામ પસંદ કરો'
+                    : 'Select Location & Village'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                <Ionicons name="close" size={22} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            {/* GPS Auto-Detect Button inside modal */}
+            <TouchableOpacity
+              onPress={detectGPS}
+              disabled={locating}
+              style={[
+                styles.gpsModalShortcut,
+                { backgroundColor: colors.primaryContainer, borderColor: colors.primary },
+              ]}
+            >
+              {locating ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Ionicons name="navigate-circle" size={20} color={colors.primary} />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.gpsShortcutTitle, { color: colors.primary }]}>
+                  {language === 'gu' ? 'GPS દ્વારા આપમેળે શોધો' : 'Detect via GPS automatically'}
+                </Text>
+                <Text style={[styles.gpsShortcutSub, { color: colors.textMuted }]}>
+                  {language === 'gu'
+                    ? 'તમારા વર્તમાન સ્થાન પરથી નજીકનું ગામ મેળવશે'
+                    : 'Assigns nearest village, taluka & district'}
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+            </TouchableOpacity>
+
+            {/* Segmented Step Tabs */}
+            <View style={styles.locTabNav}>
+              {/* Tab 1: District */}
+              <TouchableOpacity
+                onPress={() => {
+                  setLocationTab('district');
+                  setLocationSearch('');
+                }}
+                style={[
+                  styles.locTabBtn,
+                  {
+                    backgroundColor:
+                      locationTab === 'district'
+                        ? colors.primaryContainer
+                        : colors.surfaceSubtle,
+                    borderColor:
+                      locationTab === 'district'
+                        ? colors.primary
+                        : colors.border,
                   },
                 ]}
-                onPress={() => {
-                  setSelectedTalukaKey(item.key);
-                  setShowTalukaPicker(false);
-                }}
               >
                 <Text
                   style={[
-                    styles.talukaItemText,
+                    styles.locTabTitle,
                     {
                       color:
-                        selectedTalukaKey === item.key
-                          ? colors.onPrimaryContainer
+                        locationTab === 'district'
+                          ? colors.primary
                           : colors.text,
                     },
                   ]}
                 >
-                  {language === 'gu' ? item.gu : item.en}
+                  {language === 'gu' ? '૧. જિલ્લો' : '1. District'}
                 </Text>
-                {selectedTalukaKey === item.key && (
-                  <Ionicons name="checkmark" size={18} color={colors.primary} />
-                )}
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.locTabSubtitle,
+                    {
+                      color:
+                        locationTab === 'district'
+                          ? colors.primary
+                          : colors.textMuted,
+                    },
+                  ]}
+                >
+                  {selectedDistrict
+                    ? language === 'gu'
+                      ? selectedDistrict.name_gu
+                      : selectedDistrict.name_en || selectedDistrict.name_gu
+                    : language === 'gu'
+                    ? 'બાકી'
+                    : 'Pending'}
+                </Text>
               </TouchableOpacity>
-            ))}
+
+              {/* Tab 2: Taluka */}
+              <TouchableOpacity
+                onPress={() => {
+                  setLocationTab('taluka');
+                  setLocationSearch('');
+                }}
+                style={[
+                  styles.locTabBtn,
+                  {
+                    backgroundColor:
+                      locationTab === 'taluka'
+                        ? colors.primaryContainer
+                        : colors.surfaceSubtle,
+                    borderColor:
+                      locationTab === 'taluka'
+                        ? colors.primary
+                        : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.locTabTitle,
+                    {
+                      color:
+                        locationTab === 'taluka'
+                          ? colors.primary
+                          : colors.text,
+                    },
+                  ]}
+                >
+                  {language === 'gu' ? '૨. તાલુકો' : '2. Taluka'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.locTabSubtitle,
+                    {
+                      color:
+                        locationTab === 'taluka'
+                          ? colors.primary
+                          : colors.textMuted,
+                    },
+                  ]}
+                >
+                  {selectedTaluka
+                    ? language === 'gu'
+                      ? selectedTaluka.name_gu
+                      : selectedTaluka.name_en || selectedTaluka.name_gu
+                    : language === 'gu'
+                    ? 'પસંદ કરો'
+                    : 'Select'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Tab 3: Village */}
+              <TouchableOpacity
+                onPress={() => {
+                  setLocationTab('village');
+                  setLocationSearch('');
+                }}
+                style={[
+                  styles.locTabBtn,
+                  {
+                    backgroundColor:
+                      locationTab === 'village'
+                        ? colors.primaryContainer
+                        : colors.surfaceSubtle,
+                    borderColor:
+                      locationTab === 'village'
+                        ? colors.primary
+                        : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.locTabTitle,
+                    {
+                      color:
+                        locationTab === 'village'
+                          ? colors.primary
+                          : colors.text,
+                    },
+                  ]}
+                >
+                  {language === 'gu' ? '૩. ગામ' : '3. Village'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.locTabSubtitle,
+                    {
+                      color:
+                        locationTab === 'village'
+                          ? colors.primary
+                          : colors.textMuted,
+                    },
+                  ]}
+                >
+                  {selectedVillage
+                    ? language === 'gu'
+                      ? selectedVillage.name_gu
+                      : selectedVillage.name_en || selectedVillage.name_gu
+                    : language === 'gu'
+                    ? 'પસંદ કરો'
+                    : 'Select'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Search Bar */}
+            <View
+              style={[
+                styles.searchWrap,
+                {
+                  backgroundColor: colors.surfaceSubtle,
+                  borderColor: colors.borderSubtle,
+                },
+              ]}
+            >
+              <Ionicons name="search" size={18} color={colors.textMuted} />
+              <TextInput
+                value={locationSearch}
+                onChangeText={setLocationSearch}
+                placeholder={
+                  locationTab === 'district'
+                    ? language === 'gu'
+                      ? 'જિલ્લો શોધો...'
+                      : 'Search district...'
+                    : locationTab === 'taluka'
+                    ? language === 'gu'
+                      ? 'તાલુકો શોધો...'
+                      : 'Search taluka...'
+                    : language === 'gu'
+                    ? 'ગામ અથવા શહેર શોધો...'
+                    : 'Search village or city...'
+                }
+                placeholderTextColor={colors.textMuted}
+                style={[styles.searchInput, { color: colors.text }]}
+              />
+              {locationSearch.length > 0 && (
+                <TouchableOpacity onPress={() => setLocationSearch('')}>
+                  <Ionicons
+                    name="close-circle"
+                    size={18}
+                    color={colors.textMuted}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Scrollable list */}
+            <ScrollView
+              style={{ maxHeight: 320 }}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {locationTab === 'district' &&
+                districtsList
+                  .filter(d => {
+                    const q = locationSearch.toLowerCase().trim();
+                    if (!q) return true;
+                    return (
+                      d.name_en?.toLowerCase().includes(q) ||
+                      d.name_gu?.toLowerCase().includes(q)
+                    );
+                  })
+                  .map(dist => {
+                    const isSelected = dist.id === districtId;
+                    return (
+                      <TouchableOpacity
+                        key={dist.id}
+                        onPress={() => {
+                          setDistrictId(dist.id);
+                          const talukas = dist.talukas || [];
+                          if (!talukas.some(item => item.id === talukaId)) {
+                            setTalukaId(null);
+                            setVillageId(null);
+                          }
+                          setLocationSearch('');
+                          if (talukas.length > 0) {
+                            setLocationTab('taluka');
+                          }
+                        }}
+                        style={[
+                          styles.locListItem,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primaryContainer
+                              : colors.surfaceSubtle,
+                            borderColor: isSelected
+                              ? colors.primary
+                              : colors.borderSubtle,
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name="business-outline"
+                          size={18}
+                          color={isSelected ? colors.primary : colors.textMuted}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.locItemTitle,
+                              {
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
+                              },
+                            ]}
+                          >
+                            {language === 'gu'
+                              ? dist.name_gu
+                              : dist.name_en || dist.name_gu}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.locItemSub,
+                              { color: colors.textMuted },
+                            ]}
+                          >
+                            {dist.talukas?.length || 0}{' '}
+                            {language === 'gu' ? 'તાલુકા' : 'Talukas'}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+
+              {locationTab === 'taluka' &&
+                availableTalukas
+                  .filter(t => {
+                    const q = locationSearch.toLowerCase().trim();
+                    if (!q) return true;
+                    return (
+                      t.name_en?.toLowerCase().includes(q) ||
+                      t.name_gu?.toLowerCase().includes(q)
+                    );
+                  })
+                  .map(tal => {
+                    const isSelected = tal.id === talukaId;
+                    return (
+                      <TouchableOpacity
+                        key={tal.id}
+                        onPress={() => {
+                          setTalukaId(tal.id);
+                          const vills = tal.villages || [];
+                          if (!vills.some(v => v.id === villageId)) {
+                            setVillageId(null);
+                          }
+                          setLocationSearch('');
+                          if (vills.length > 0) {
+                            setLocationTab('village');
+                          }
+                        }}
+                        style={[
+                          styles.locListItem,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primaryContainer
+                              : colors.surfaceSubtle,
+                            borderColor: isSelected
+                              ? colors.primary
+                              : colors.borderSubtle,
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name="trail-sign-outline"
+                          size={18}
+                          color={isSelected ? colors.primary : colors.textMuted}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.locItemTitle,
+                              {
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
+                              },
+                            ]}
+                          >
+                            {language === 'gu'
+                              ? tal.name_gu
+                              : tal.name_en || tal.name_gu}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.locItemSub,
+                              { color: colors.textMuted },
+                            ]}
+                          >
+                            {tal.villages?.length || 0}{' '}
+                            {language === 'gu' ? 'ગામ/શહેરો' : 'Villages/Towns'}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+
+              {locationTab === 'village' &&
+                availableVillages
+                  .filter(v => {
+                    const q = locationSearch.toLowerCase().trim();
+                    if (!q) return true;
+                    return (
+                      v.name_en?.toLowerCase().includes(q) ||
+                      v.name_gu?.toLowerCase().includes(q) ||
+                      v.pincode?.includes(q)
+                    );
+                  })
+                  .map(vil => {
+                    const isSelected = vil.id === villageId;
+                    return (
+                      <TouchableOpacity
+                        key={vil.id}
+                        onPress={() => {
+                          setVillageId(vil.id);
+                          setShowLocationModal(false);
+                          showToast(
+                            language === 'gu'
+                              ? `ગામ "${vil.name_gu}" પસંદ કરાયું`
+                              : `Village "${vil.name_en || vil.name_gu}" selected`,
+                            'info',
+                          );
+                        }}
+                        style={[
+                          styles.locListItem,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primaryContainer
+                              : colors.surfaceSubtle,
+                            borderColor: isSelected
+                              ? colors.primary
+                              : colors.borderSubtle,
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name="home-outline"
+                          size={18}
+                          color={isSelected ? colors.primary : colors.textMuted}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.locItemTitle,
+                              {
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
+                              },
+                            ]}
+                          >
+                            {language === 'gu'
+                              ? vil.name_gu
+                              : vil.name_en || vil.name_gu}
+                          </Text>
+                          {Boolean(vil.pincode) && (
+                            <Text
+                              style={[
+                                styles.locItemSub,
+                                { color: colors.textMuted },
+                              ]}
+                            >
+                              {language === 'gu' ? 'પિનકોડ' : 'PIN'}: {vil.pincode}
+                            </Text>
+                          )}
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1299,4 +2144,140 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   doneBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  modalOverlayBottom: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  photoSheetContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 36,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  sheetTitle: { fontSize: 18, fontWeight: '800' },
+  sheetSub: { fontSize: 13, marginTop: 2, marginBottom: 18 },
+  sheetActionRow: { flexDirection: 'row', gap: 16, marginBottom: 20 },
+  sheetActionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 14,
+  },
+  sheetActionIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  sheetActionBtnTitle: { fontSize: 14, fontWeight: '800' },
+  sheetActionBtnSub: { fontSize: 11, marginTop: 2 },
+  cancelModalBtn: {
+    height: 46,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelModalText: { fontSize: 14, fontWeight: '700' },
+  locationModalCard: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 32,
+    maxHeight: '85%',
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cottageIconBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitleText: { fontSize: 16, fontWeight: '800' },
+  gpsModalShortcut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  gpsShortcutTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  gpsShortcutSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  locTabNav: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+  },
+  locTabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  locTabTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  locTabSubtitle: {
+    fontSize: 10,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 42,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 8,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    height: 42,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  locListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    gap: 10,
+  },
+  locItemTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  locItemSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
 });
+

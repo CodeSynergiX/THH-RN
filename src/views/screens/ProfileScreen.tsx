@@ -20,7 +20,9 @@ import { useTranslation } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { demographicsService } from '../../services/demographicsService';
+import { captureLocation } from '../../services/deviceCapture';
 import { District, Taluka, Village } from '../../models/demographics.model';
+import { captureFromCamera, pickFromGallery } from '../../services/imagePickerService';
 
 interface Props {
   onSettings?: () => void;
@@ -49,7 +51,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
   const { theme } = useAppTheme();
   const { colors } = theme;
   const { t, language } = useTranslation();
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, uploadAvatar, logout } = useAuth();
   const { showToast } = useToast();
 
   const [firstName, setFirstName] = useState('');
@@ -79,6 +81,7 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   // Load master districts list
   useEffect(() => {
@@ -163,11 +166,20 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
 
   const handleCameraCapture = async () => {
     setShowPhotoModal(false);
-    setPhotoUploading(true);
     try {
-      const newPic = `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300&h=300&fit=crop&crop=face&t=${Date.now()}`;
-      setAvatarUrl(newPic);
-      await updateProfile({ avatar_url: newPic });
+      const media = await captureFromCamera();
+      if (!media) return;
+
+      setPhotoUploading(true);
+      setAvatarUrl(media.uri); // Instant optimistic preview
+
+      if (media.base64) {
+        const res = await uploadAvatar({ avatar_base64: media.base64 });
+        if (res.data?.avatar_url) {
+          setAvatarUrl(res.data.avatar_url);
+        }
+      }
+
       showToast(
         language === 'gu'
           ? 'કેમેરા ફોટો પ્રોફાઇલમાં સાચવવામાં આવ્યો છે.'
@@ -188,11 +200,20 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
 
   const handleGalleryPick = async () => {
     setShowPhotoModal(false);
-    setPhotoUploading(true);
     try {
-      const newPic = `https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=300&h=300&fit=crop&crop=face&t=${Date.now()}`;
-      setAvatarUrl(newPic);
-      await updateProfile({ avatar_url: newPic });
+      const media = await pickFromGallery();
+      if (!media) return;
+
+      setPhotoUploading(true);
+      setAvatarUrl(media.uri); // Instant optimistic preview
+
+      if (media.base64) {
+        const res = await uploadAvatar({ avatar_base64: media.base64 });
+        if (res.data?.avatar_url) {
+          setAvatarUrl(res.data.avatar_url);
+        }
+      }
+
       showToast(
         language === 'gu'
           ? 'ગેલેરી ફોટો પ્રોફાઇલમાં અપડેટ કરવામાં આવ્યો છે.'
@@ -356,6 +377,71 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
     );
   };
 
+  /**
+   * GPS Auto-Fill: Get device location → nearest village API → populate district/taluka/village.
+   * Falls back gracefully if GPS or API is unavailable.
+   */
+  const handleGpsAutoFill = async () => {
+    setGpsLoading(true);
+    try {
+      const coords = await captureLocation();
+      if (!coords) {
+        showToast(
+          language === 'gu'
+            ? 'GPS અક્ષ્ય નહીં. ભૌગોલિક સ્થાન ચાલુ છે?'
+            : 'Could not access GPS. Is location enabled?',
+          'warning',
+          language === 'gu' ? 'GPS અનુપલબ્ધ' : 'GPS Unavailable',
+        );
+        return;
+      }
+
+      const nearest = await demographicsService.getNearestLocation(coords.lat, coords.lng);
+      if (!nearest) {
+        showToast(
+          language === 'gu'
+            ? 'આ GPS સ્થાન માટે નજીકનું ગામ મળ્યું નહીં.'
+            : 'No nearby village found for your GPS position.',
+          'warning',
+        );
+        return;
+      }
+
+      // Set district, taluka, village IDs from nearest result
+      if (nearest.district) {
+        setDistrictId(nearest.district.id);
+      }
+      if (nearest.taluka) {
+        setTalukaId(nearest.taluka.id);
+      }
+      setVillageId(nearest.village.id);
+      if (nearest.village.pincode) {
+        setPincode(nearest.village.pincode);
+      }
+
+      const villageLabelEn = nearest.village.name_en || nearest.village.name_gu;
+      const villageLabelGu = nearest.village.name_gu;
+      const distKm = nearest.distance_km;
+
+      showToast(
+        language === 'gu'
+          ? `સ્થળ ભરાયું: ${villageLabelGu} (${distKm} km)`
+          : `Location filled: ${villageLabelEn} (${distKm} km away)`,
+        'success',
+        language === 'gu' ? 'GPS સ્થળ' : 'GPS Located',
+      );
+    } catch {
+      showToast(
+        language === 'gu'
+          ? 'GPS સ્થળ ભરી શકાયું નહીં.'
+          : 'Failed to auto-fill location via GPS.',
+        'error',
+      );
+    } finally {
+      setGpsLoading(false);
+    }
+  };
+
   return (
     <View style={[styles.wrap, { backgroundColor: colors.background }]}>
       {/* Reusable Canopy Header */}
@@ -374,11 +460,15 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 220 }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
         >
           {/* 1. Profile Hero & Verified Member Card */}
           <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -456,6 +546,32 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                     {memberCode}
                   </Text>
                 </View>
+                {Boolean(user?.email_verified || user?.email_verified_at) && (
+                  <View
+                    style={[
+                      styles.chipPill,
+                      {
+                        backgroundColor: `${colors.primary}18`,
+                        borderColor: `${colors.primary}40`,
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="shield-checkmark"
+                      size={13}
+                      color={colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.chipPillText,
+                        { color: colors.primary, fontWeight: '700' },
+                      ]}
+                    >
+                      {language === 'gu' ? 'ઈમેલ ચકાસાયેલ' : 'Email Verified'}
+                    </Text>
+                  </View>
+                )}
                 <View
                   style={[
                     styles.chipPill,
@@ -631,8 +747,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                   color={colors.secondary}
                 />
                 <Text style={[styles.lockedInputText, { color: colors.text }]}>
-                  {user?.phone ||
-                    (language === 'gu' ? 'નોંધાયેલ નથી' : 'Not provided')}
+                  {!user?.phone || user.phone.includes('@')
+                    ? language === 'gu'
+                      ? 'નોંધાયેલ નથી'
+                      : 'Not provided'
+                    : user.phone}
                 </Text>
                 <Ionicons
                   name="lock-closed"
@@ -732,12 +851,12 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                             : 'person'
                         }
                         size={16}
-                        color={gender === g ? '#ffffff' : colors.textMuted}
+                        color={gender === g ? colors.textInverse : colors.textMuted}
                       />
                       <Text
                         style={[
                           styles.genderTabText,
-                          { color: gender === g ? '#ffffff' : colors.text },
+                          { color: gender === g ? colors.textInverse : colors.text },
                         ]}
                       >
                         {label}
@@ -837,7 +956,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
               }}
               style={[
                 styles.villageInfoBox,
-                { backgroundColor: colors.surfaceSubtle },
+                {
+                  backgroundColor: colors.surfaceSubtle,
+                  borderWidth: 1,
+                  borderColor: colors.borderSubtle,
+                },
               ]}
             >
               <View style={styles.villageHeaderRow}>
@@ -873,16 +996,75 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                     { backgroundColor: colors.primaryContainer },
                   ]}
                 >
-                  <Ionicons name="pencil" size={12} color={colors.primary} />
+                  <Ionicons name="pencil" size={12} color={colors.onPrimaryContainer} />
                   <Text
                     style={[
                       styles.changeLocationText,
-                      { color: colors.primary },
+                      { color: colors.onPrimaryContainer },
                     ]}
                   >
                     {language === 'gu' ? 'બદલો' : 'Edit'}
                   </Text>
                 </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* GPS Auto-Detect Button */}
+            <TouchableOpacity
+              onPress={handleGpsAutoFill}
+              disabled={gpsLoading}
+              style={[
+                styles.gpsDetectBtn,
+                {
+                  backgroundColor: gpsLoading
+                    ? colors.surfaceSubtle
+                    : colors.secondaryContainer,
+                  borderColor: colors.secondary,
+                },
+              ]}
+            >
+              {gpsLoading ? (
+                <ActivityIndicator size="small" color={colors.secondary} />
+              ) : (
+                <Ionicons
+                  name="navigate"
+                  size={16}
+                  color={colors.onSecondaryContainer}
+                />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.gpsDetectTitle,
+                    { color: colors.onSecondaryContainer },
+                  ]}
+                >
+                  {gpsLoading
+                    ? language === 'gu'
+                      ? 'GPS સ્થળ શોધી રહ્યા છે...'
+                      : 'Detecting location...'
+                    : language === 'gu'
+                    ? 'GPS થી સ્થળ ભરો'
+                    : 'Auto-detect via GPS'}
+                </Text>
+                <Text
+                  style={[
+                    styles.gpsDetectSub,
+                    { color: colors.onSecondaryContainer, opacity: 0.85 },
+                  ]}
+                >
+                  {language === 'gu'
+                    ? 'નજીકનું ગામ, તાલુકો, જિલ્લો આપમેળે ભરાશે'
+                    : 'Nearest village, taluka & district auto-filled'}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.gpsDetectBadge,
+                  { backgroundColor: colors.secondary },
+                ]}
+              >
+                <Ionicons name="flash" size={12} color={colors.textInverse} />
               </View>
             </TouchableOpacity>
 
@@ -904,7 +1086,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                   }}
                   style={[
                     styles.selectorInputWrap,
-                    { backgroundColor: colors.surfaceSubtle },
+                    {
+                      backgroundColor: colors.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
                   <Ionicons
@@ -946,7 +1132,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                   }}
                   style={[
                     styles.selectorInputWrap,
-                    { backgroundColor: colors.surfaceSubtle },
+                    {
+                      backgroundColor: colors.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
                   <Ionicons
@@ -988,7 +1178,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                   }}
                   style={[
                     styles.selectorInputWrap,
-                    { backgroundColor: colors.surfaceSubtle },
+                    {
+                      backgroundColor: colors.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
                   <Ionicons
@@ -1027,7 +1221,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
               <View
                 style={[
                   styles.iconInputWrap,
-                  { backgroundColor: colors.surfaceSubtle },
+                  {
+                    backgroundColor: colors.surfaceSubtle,
+                    borderWidth: 1,
+                    borderColor: colors.borderSubtle,
+                  },
                 ]}
               >
                 <Ionicons
@@ -1060,7 +1258,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                 <View
                   style={[
                     styles.iconInputWrap,
-                    { backgroundColor: colors.surfaceSubtle },
+                    {
+                      backgroundColor: colors.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
                   <Ionicons
@@ -1089,7 +1291,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                 <View
                   style={[
                     styles.iconInputWrap,
-                    { backgroundColor: colors.surfaceSubtle },
+                    {
+                      backgroundColor: colors.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: colors.borderSubtle,
+                    },
                   ]}
                 >
                   <Ionicons
@@ -2545,5 +2751,31 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '800',
+  },
+  gpsDetectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 10,
+    marginBottom: 14,
+  },
+  gpsDetectTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  gpsDetectSub: {
+    fontSize: 11,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  gpsDetectBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
