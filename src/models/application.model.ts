@@ -154,4 +154,3 @@ export interface CreateApplicationPayload {
     path?: string;
   }>;
 }
-

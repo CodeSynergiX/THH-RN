@@ -607,7 +607,10 @@ export class DemographicsService {
     }
   }
 
-  async getNearestLocation(lat: number, lng: number): Promise<NearestLocationResult | null> {
+  async getNearestLocation(
+    lat: number,
+    lng: number,
+  ): Promise<NearestLocationResult | null> {
     try {
       const res = await defaultApiClient.get<{
         success: boolean;

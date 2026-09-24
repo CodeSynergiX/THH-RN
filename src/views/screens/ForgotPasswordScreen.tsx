@@ -49,7 +49,9 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
   // Form states
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
-  const [verifiedToken, setVerifiedToken] = useState<string | undefined>(undefined);
+  const [verifiedToken, setVerifiedToken] = useState<string | undefined>(
+    undefined,
+  );
   const [verifiedCode, setVerifiedCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -274,9 +276,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
 
     if (newPassword !== confirmPassword) {
       showToast(
-        isGu
-          ? 'બંને પાસવર્ડ સરખા નથી.'
-          : 'Passwords do not match.',
+        isGu ? 'બંને પાસવર્ડ સરખા નથી.' : 'Passwords do not match.',
         'warning',
       );
       return;
@@ -337,7 +337,10 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 200 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { flexGrow: 1, paddingBottom: 200 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
@@ -360,7 +363,11 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                 { backgroundColor: colors.surfaceSubtle },
               ]}
             >
-              <Ionicons name="shield-checkmark" size={13} color={colors.primary} />
+              <Ionicons
+                name="shield-checkmark"
+                size={13}
+                color={colors.primary}
+              />
               <Text style={[styles.kickerText, { color: colors.secondary }]}>
                 {step === 'email'
                   ? isGu
@@ -567,7 +574,8 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                             {
                               backgroundColor: isFilled
                                 ? colors.surface
-                                : colors.surfaceSecondary || colors.surfaceSubtle,
+                                : colors.surfaceSecondary ||
+                                  colors.surfaceSubtle,
                               borderColor: isFilled
                                 ? colors.primary
                                 : colors.borderSubtle,
@@ -603,9 +611,7 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                 <View style={styles.timerRow}>
                   <Text style={[styles.timerText, { color: colors.textMuted }]}>
                     {isGu ? 'ફરી મોકલવા માટે બાકી: ' : 'Resend code in '}
-                    <Text
-                      style={{ color: colors.text, fontWeight: '700' }}
-                    >
+                    <Text style={{ color: colors.text, fontWeight: '700' }}>
                       00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
                     </Text>
                   </Text>
@@ -619,7 +625,9 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                         styles.resendBtnText,
                         {
                           color:
-                            resendTimer === 0 ? colors.primary : colors.textMuted,
+                            resendTimer === 0
+                              ? colors.primary
+                              : colors.textMuted,
                           opacity: resendTimer === 0 ? 1 : 0.6,
                         },
                       ]}
@@ -713,7 +721,9 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                     <Ionicons
                       name="lock-closed-outline"
                       size={18}
-                      color={isPasswordValid ? colors.primary : colors.textMuted}
+                      color={
+                        isPasswordValid ? colors.primary : colors.textMuted
+                      }
                       style={styles.inputLeftIcon}
                     />
                     <TextInput
@@ -782,7 +792,9 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                         },
                       ]}
                       placeholder={
-                        isGu ? 'ફરીથી પાસવર્ડ દાખલ કરો' : 'Re-enter new password'
+                        isGu
+                          ? 'ફરીથી પાસવર્ડ દાખલ કરો'
+                          : 'Re-enter new password'
                       }
                       placeholderTextColor={colors.textMuted}
                       secureTextEntry={!showConfirmPassword}
@@ -832,11 +844,15 @@ export const ForgotPasswordScreen: React.FC<{ onBack: () => void }> = ({
                         style={[
                           styles.submitBtnText,
                           {
-                            color: passwordsMatch ? '#ffffff' : colors.textMuted,
+                            color: passwordsMatch
+                              ? '#ffffff'
+                              : colors.textMuted,
                           },
                         ]}
                       >
-                        {isGu ? 'પાસવર્ડ બદલો અને લોગિન કરો' : 'Reset Password & Login'}
+                        {isGu
+                          ? 'પાસવર્ડ બદલો અને લોગિન કરો'
+                          : 'Reset Password & Login'}
                       </Text>
                       <Ionicons
                         name="arrow-forward"

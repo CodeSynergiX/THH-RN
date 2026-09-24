@@ -31,7 +31,8 @@ async function requestCameraPermission(): Promise<boolean> {
       PermissionsAndroid.PERMISSIONS.CAMERA,
       {
         title: 'Camera Permission Required',
-        message: 'The Helping Hand needs camera access to capture documents and profile photos.',
+        message:
+          'The Helping Hand needs camera access to capture documents and profile photos.',
         buttonPositive: 'Grant Permission',
         buttonNegative: 'Cancel',
       },
@@ -49,7 +50,10 @@ function extractAsset(response: ImagePickerResponse): PickedMedia | null {
   }
   if (response.errorCode) {
     console.warn('ImagePicker Error: ', response.errorMessage);
-    Alert.alert('Image Picker Error', response.errorMessage || 'Failed to capture image');
+    Alert.alert(
+      'Image Picker Error',
+      response.errorMessage || 'Failed to capture image',
+    );
     return null;
   }
   const asset: Asset | undefined = response.assets && response.assets[0];

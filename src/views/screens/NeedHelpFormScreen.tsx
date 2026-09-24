@@ -19,7 +19,10 @@ import { useAuth } from '../../context/AuthContext';
 import { applicationService } from '../../services/applicationService';
 import { demographicsService } from '../../services/demographicsService';
 import { captureLocation } from '../../services/deviceCapture';
-import { captureFromCamera, pickFromGallery } from '../../services/imagePickerService';
+import {
+  captureFromCamera,
+  pickFromGallery,
+} from '../../services/imagePickerService';
 import { District, Taluka, Village } from '../../models/demographics.model';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import { configService } from '../../services/configService';
@@ -61,7 +64,9 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
     user?.village_id || user?.village?.id || null,
   );
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [locationTab, setLocationTab] = useState<'district' | 'taluka' | 'village'>('district');
+  const [locationTab, setLocationTab] = useState<
+    'district' | 'taluka' | 'village'
+  >('district');
   const [locationSearch, setLocationSearch] = useState('');
 
   const [message, setMessage] = useState('');
@@ -174,9 +179,7 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
     if (parts.length > 0) {
       return parts.join(', ');
     }
-    return language === 'gu'
-      ? 'ચીખલી, નવસારી'
-      : 'Chikhli, Navsari';
+    return language === 'gu' ? 'ચીખલી, નવસારી' : 'Chikhli, Navsari';
   }, [selectedVillage, selectedTaluka, selectedDistrict, language]);
 
   useEffect(() => {
@@ -219,7 +222,10 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
       setLng(pos.lng);
 
       // Fetch nearest village from backend master API
-      const nearest = await demographicsService.getNearestLocation(pos.lat, pos.lng);
+      const nearest = await demographicsService.getNearestLocation(
+        pos.lat,
+        pos.lng,
+      );
       if (nearest) {
         if (nearest.district) {
           setDistrictId(nearest.district.id);
@@ -244,8 +250,12 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
 
         showToast(
           language === 'gu'
-            ? `નજીકનું સ્થળ: ${vName}${tName ? ', ' + tName : ''} (${distKm} km)`
-            : `Nearest location: ${vName}${tName ? ', ' + tName : ''} (${distKm} km away)`,
+            ? `નજીકનું સ્થળ: ${vName}${
+                tName ? ', ' + tName : ''
+              } (${distKm} km)`
+            : `Nearest location: ${vName}${
+                tName ? ', ' + tName : ''
+              } (${distKm} km away)`,
           'success',
           language === 'gu' ? 'GPS સ્થળ મળ્યું' : 'Location Assigned',
         );
@@ -259,7 +269,9 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
       }
     } catch {
       showToast(
-        language === 'gu' ? 'GPS મેળવી શકાયું નહીં.' : 'Failed to detect location.',
+        language === 'gu'
+          ? 'GPS મેળવી શકાયું નહીં.'
+          : 'Failed to detect location.',
         'error',
       );
     } finally {
@@ -496,7 +508,10 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 220 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { flexGrow: 1, paddingBottom: 220 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
@@ -788,7 +803,13 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
             <TouchableOpacity
               onPress={() => {
                 setLocationTab(
-                  villageId ? 'village' : talukaId ? 'village' : districtId ? 'taluka' : 'district',
+                  villageId
+                    ? 'village'
+                    : talukaId
+                    ? 'village'
+                    : districtId
+                    ? 'taluka'
+                    : 'district',
                 );
                 setLocationSearch('');
                 setShowLocationModal(true);
@@ -809,8 +830,15 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                   {locationDisplayText}
                 </Text>
                 {Boolean(selectedVillage?.pincode) && (
-                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                    {language === 'gu' ? 'પિનકોડ:' : 'Pincode:'} {selectedVillage?.pincode}
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: colors.textMuted,
+                      marginTop: 2,
+                    }}
+                  >
+                    {language === 'gu' ? 'પિનકોડ:' : 'Pincode:'}{' '}
+                    {selectedVillage?.pincode}
                   </Text>
                 )}
               </View>
@@ -1156,7 +1184,9 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                 >
                   <Ionicons name="camera" size={24} color="#ffffff" />
                 </View>
-                <Text style={[styles.sheetActionBtnTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.sheetActionBtnTitle, { color: colors.text }]}
+                >
                   {language === 'gu' ? 'કેમેરાથી ફોટો' : 'Camera'}
                 </Text>
                 <Text
@@ -1184,7 +1214,9 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                 >
                   <Ionicons name="images" size={24} color="#ffffff" />
                 </View>
-                <Text style={[styles.sheetActionBtnTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.sheetActionBtnTitle, { color: colors.text }]}
+                >
                   {language === 'gu' ? 'ગેલેરીમાંથી' : 'Gallery'}
                 </Text>
                 <Text
@@ -1264,19 +1296,32 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
               disabled={locating}
               style={[
                 styles.gpsModalShortcut,
-                { backgroundColor: colors.primaryContainer, borderColor: colors.primary },
+                {
+                  backgroundColor: colors.primaryContainer,
+                  borderColor: colors.primary,
+                },
               ]}
             >
               {locating ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Ionicons name="navigate-circle" size={20} color={colors.primary} />
+                <Ionicons
+                  name="navigate-circle"
+                  size={20}
+                  color={colors.primary}
+                />
               )}
               <View style={{ flex: 1 }}>
-                <Text style={[styles.gpsShortcutTitle, { color: colors.primary }]}>
-                  {language === 'gu' ? 'GPS દ્વારા આપમેળે શોધો' : 'Detect via GPS automatically'}
+                <Text
+                  style={[styles.gpsShortcutTitle, { color: colors.primary }]}
+                >
+                  {language === 'gu'
+                    ? 'GPS દ્વારા આપમેળે શોધો'
+                    : 'Detect via GPS automatically'}
                 </Text>
-                <Text style={[styles.gpsShortcutSub, { color: colors.textMuted }]}>
+                <Text
+                  style={[styles.gpsShortcutSub, { color: colors.textMuted }]}
+                >
                   {language === 'gu'
                     ? 'તમારા વર્તમાન સ્થાન પરથી નજીકનું ગામ મેળવશે'
                     : 'Assigns nearest village, taluka & district'}
@@ -1356,9 +1401,7 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                         ? colors.primaryContainer
                         : colors.surfaceSubtle,
                     borderColor:
-                      locationTab === 'taluka'
-                        ? colors.primary
-                        : colors.border,
+                      locationTab === 'taluka' ? colors.primary : colors.border,
                   },
                 ]}
               >
@@ -1367,9 +1410,7 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                     styles.locTabTitle,
                     {
                       color:
-                        locationTab === 'taluka'
-                          ? colors.primary
-                          : colors.text,
+                        locationTab === 'taluka' ? colors.primary : colors.text,
                     },
                   ]}
                 >
@@ -1681,7 +1722,9 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                           showToast(
                             language === 'gu'
                               ? `ગામ "${vil.name_gu}" પસંદ કરાયું`
-                              : `Village "${vil.name_en || vil.name_gu}" selected`,
+                              : `Village "${
+                                  vil.name_en || vil.name_gu
+                                }" selected`,
                             'info',
                           );
                         }}
@@ -1724,7 +1767,8 @@ export const NeedHelpFormScreen: React.FC<Props> = ({
                                 { color: colors.textMuted },
                               ]}
                             >
-                              {language === 'gu' ? 'પિનકોડ' : 'PIN'}: {vil.pincode}
+                              {language === 'gu' ? 'પિનકોડ' : 'PIN'}:{' '}
+                              {vil.pincode}
                             </Text>
                           )}
                         </View>
@@ -2280,4 +2324,3 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-

@@ -22,7 +22,10 @@ import { useToast } from '../../context/ToastContext';
 import { demographicsService } from '../../services/demographicsService';
 import { captureLocation } from '../../services/deviceCapture';
 import { District, Taluka, Village } from '../../models/demographics.model';
-import { captureFromCamera, pickFromGallery } from '../../services/imagePickerService';
+import {
+  captureFromCamera,
+  pickFromGallery,
+} from '../../services/imagePickerService';
 
 interface Props {
   onSettings?: () => void;
@@ -396,7 +399,10 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
         return;
       }
 
-      const nearest = await demographicsService.getNearestLocation(coords.lat, coords.lng);
+      const nearest = await demographicsService.getNearestLocation(
+        coords.lat,
+        coords.lng,
+      );
       if (!nearest) {
         showToast(
           language === 'gu'
@@ -464,7 +470,10 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 220 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { flexGrow: 1, paddingBottom: 220 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
@@ -851,12 +860,17 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                             : 'person'
                         }
                         size={16}
-                        color={gender === g ? colors.textInverse : colors.textMuted}
+                        color={
+                          gender === g ? colors.textInverse : colors.textMuted
+                        }
                       />
                       <Text
                         style={[
                           styles.genderTabText,
-                          { color: gender === g ? colors.textInverse : colors.text },
+                          {
+                            color:
+                              gender === g ? colors.textInverse : colors.text,
+                          },
                         ]}
                       >
                         {label}
@@ -996,7 +1010,11 @@ export const ProfileScreen: React.FC<Props> = ({ onSettings, onBack }) => {
                     { backgroundColor: colors.primaryContainer },
                   ]}
                 >
-                  <Ionicons name="pencil" size={12} color={colors.onPrimaryContainer} />
+                  <Ionicons
+                    name="pencil"
+                    size={12}
+                    color={colors.onPrimaryContainer}
+                  />
                   <Text
                     style={[
                       styles.changeLocationText,

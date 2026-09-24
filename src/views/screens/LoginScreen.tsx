@@ -94,8 +94,8 @@ export const LoginScreen: React.FC<Props> = ({
         err instanceof Error
           ? err.message
           : language === 'gu'
-            ? 'ઓટીપી મોકલી શકાયો નહીં.'
-            : 'Failed to send OTP.',
+          ? 'ઓટીપી મોકલી શકાયો નહીં.'
+          : 'Failed to send OTP.',
         'error',
         language === 'gu' ? 'ઓટીપી નિષ્ફળ' : 'OTP Failed',
       );
@@ -135,16 +135,16 @@ export const LoginScreen: React.FC<Props> = ({
             ? 'કૃપા કરીને ઈમેલ પર મળેલો ૬-અંકનો ઓટીપી દાખલ કરો.'
             : 'Please enter the 6-digit OTP received on email.'
           : language === 'gu'
-            ? 'કૃપા કરીને પાસવર્ડ દાખલ કરો.'
-            : 'Please enter your password.',
+          ? 'કૃપા કરીને પાસવર્ડ દાખલ કરો.'
+          : 'Please enter your password.',
         'warning',
         language === 'gu'
           ? method === 'otp'
             ? 'ઓટીપી જરૂરી છે'
             : 'પાસવર્ડ જરૂરી છે'
           : method === 'otp'
-            ? 'OTP Required'
-            : 'Password Required',
+          ? 'OTP Required'
+          : 'Password Required',
       );
       return;
     }
@@ -168,8 +168,8 @@ export const LoginScreen: React.FC<Props> = ({
         err instanceof Error
           ? err.message
           : language === 'gu'
-            ? 'કૃપા કરીને વિગતો તપાસો.'
-            : 'Invalid credentials. Please verify and retry.',
+          ? 'કૃપા કરીને વિગતો તપાસો.'
+          : 'Invalid credentials. Please verify and retry.',
         'error',
         language === 'gu' ? 'લોગિન નિષ્ફળ' : 'Login Failed',
       );
@@ -199,7 +199,6 @@ export const LoginScreen: React.FC<Props> = ({
     ).start();
   }, [swayAnim]);
 
-
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -227,7 +226,10 @@ export const LoginScreen: React.FC<Props> = ({
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 200 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { flexGrow: 1, paddingBottom: 200 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
@@ -246,7 +248,12 @@ export const LoginScreen: React.FC<Props> = ({
                 size={36}
                 color={colors.primary}
               /> */}
-            <View style={[styles.treeCircle, { backgroundColor: colors.surface, width: 200, height: 200 }]}>
+            <View
+              style={[
+                styles.treeCircle,
+                { backgroundColor: colors.surface, width: 200, height: 200 },
+              ]}
+            >
               <THHTreeSVG swayAnim={swayAnim} floatAnim={floatAnim} />
             </View>
             {/* </View> */}
@@ -359,8 +366,8 @@ export const LoginScreen: React.FC<Props> = ({
                       ? 'ઈમેલ સરનામું (ઓટીપી માટે)'
                       : 'Email Address (for OTP)'
                     : language === 'gu'
-                      ? 'મોબાઇલ નંબર અથવા ઈમેલ'
-                      : 'Mobile Number / Email'}
+                    ? 'મોબાઇલ નંબર અથવા ઈમેલ'
+                    : 'Mobile Number / Email'}
                 </Text>
               </View>
               <View
@@ -373,8 +380,8 @@ export const LoginScreen: React.FC<Props> = ({
                   <Ionicons
                     name={
                       identifier.includes('@') ||
-                        /[a-zA-Z]/.test(identifier) ||
-                        method === 'otp'
+                      /[a-zA-Z]/.test(identifier) ||
+                      method === 'otp'
                         ? 'mail-outline'
                         : 'phone-portrait-outline'
                     }
@@ -386,10 +393,10 @@ export const LoginScreen: React.FC<Props> = ({
                     /[a-zA-Z]/.test(identifier) ||
                     method === 'otp'
                   ) && (
-                      <Text style={[styles.prefixText, { color: colors.text }]}>
-                        +91
-                      </Text>
-                    )}
+                    <Text style={[styles.prefixText, { color: colors.text }]}>
+                      +91
+                    </Text>
+                  )}
                   <View
                     style={[
                       styles.dividerV,
@@ -405,8 +412,8 @@ export const LoginScreen: React.FC<Props> = ({
                         ? 'તમારું ઈમેલ સરનામું દાખલ કરો'
                         : 'Enter your email address'
                       : language === 'gu'
-                        ? '૯૮૭૬૫ ૪૩૨૧૦ અથવા ઈમેલ'
-                        : '98765 43210 or email'
+                      ? '૯૮૭૬૫ ૪૩૨૧૦ અથવા ઈમેલ'
+                      : '98765 43210 or email'
                   }
                   placeholderTextColor={colors.textMuted}
                   autoCapitalize="none"
@@ -435,8 +442,8 @@ export const LoginScreen: React.FC<Props> = ({
                           ? 'ફરી મોકલો'
                           : 'Resend'
                         : language === 'gu'
-                          ? 'ઓટીપી મોકલો'
-                          : 'Send OTP'}
+                        ? 'ઓટીપી મોકલો'
+                        : 'Send OTP'}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -516,8 +523,8 @@ export const LoginScreen: React.FC<Props> = ({
                       ? 'ઓટીપી કોડ'
                       : 'Security PIN / OTP'
                     : language === 'gu'
-                      ? 'પાસવર્ડ'
-                      : 'Password'}
+                    ? 'પાસવર્ડ'
+                    : 'Password'}
                 </Text>
               </View>
               <View
@@ -543,8 +550,8 @@ export const LoginScreen: React.FC<Props> = ({
                         ? '૬ આંકડાનો ઓટીપી'
                         : 'Enter 6-digit OTP'
                       : language === 'gu'
-                        ? 'પાસવર્ડ દાખલ કરો'
-                        : 'Enter password'
+                      ? 'પાસવર્ડ દાખલ કરો'
+                      : 'Enter password'
                   }
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry={!showSecret}
@@ -618,8 +625,8 @@ export const LoginScreen: React.FC<Props> = ({
                     ? 'પ્રક્રિયા ચાલુ...'
                     : 'Processing...'
                   : language === 'gu'
-                    ? 'પ્રવેશ કરો'
-                    : 'Sign In'}
+                  ? 'પ્રવેશ કરો'
+                  : 'Sign In'}
               </Text>
               <Ionicons
                 name="arrow-forward"

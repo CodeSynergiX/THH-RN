@@ -129,7 +129,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
   const [password, setPassword] = useState('');
   const [taluka, setTaluka] = useState('');
   const [districtsList, setDistrictsList] = useState<District[]>([]);
-  const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null);
+  const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(
+    null,
+  );
   const [availableTalukas, setAvailableTalukas] = useState<Taluka[]>([]);
   const [selectedTalukaId, setSelectedTalukaId] = useState<number | null>(null);
   const [availableVillages, setAvailableVillages] = useState<Village[]>([]);
@@ -140,10 +142,13 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
     .map(vid => availableVillages.find(v => v.id === vid))
     .filter(Boolean)
     .map(v => v!.name_en || v!.name_gu);
-  const [domainsList, setDomainsList] = useState<SevaDomain[]>(EXPERTISE_DOMAINS);
+  const [domainsList, setDomainsList] =
+    useState<SevaDomain[]>(EXPERTISE_DOMAINS);
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [showDomainsModal, setShowDomainsModal] = useState(false);
-  const [availability, setAvailability] = useState<'weekend' | 'weekday' | 'fulltime'>('weekend');
+  const [availability, setAvailability] = useState<
+    'weekend' | 'weekday' | 'fulltime'
+  >('weekend');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
@@ -382,7 +387,10 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { flexGrow: 1, paddingBottom: 220 }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { flexGrow: 1, paddingBottom: 220 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
@@ -673,15 +681,32 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                   marginBottom: 6,
                 }}
               >
-                <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 0 }]}>
+                <Text
+                  style={[
+                    styles.fieldLabel,
+                    { color: colors.text, marginBottom: 0 },
+                  ]}
+                >
                   {language === 'gu' ? 'ઈમેલ સરનામું' : 'Email Address'}{' '}
                   <Text style={styles.optionalText}>
-                    {language === 'gu' ? '(વૈકલ્પિક - ઓટીપી ચકાસણી)' : '(Optional - OTP verify)'}
+                    {language === 'gu'
+                      ? '(વૈકલ્પિક - ઓટીપી ચકાસણી)'
+                      : '(Optional - OTP verify)'}
                   </Text>
                 </Text>
                 {otpVerified && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="checkmark-circle" size={15} color={colors.primary} />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={15}
+                      color={colors.primary}
+                    />
                     <Text
                       style={{
                         fontSize: 12,
@@ -700,7 +725,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                   styles.emailInputRow,
                   {
                     backgroundColor: colors.surfaceSubtle,
-                    borderColor: otpVerified ? colors.primary : colors.borderSubtle,
+                    borderColor: otpVerified
+                      ? colors.primary
+                      : colors.borderSubtle,
                   },
                 ]}
               >
@@ -857,13 +884,23 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                       { backgroundColor: `${colors.primary}18` },
                     ]}
                   >
-                    <Ionicons name="location" size={18} color={colors.primary} />
+                    <Ionicons
+                      name="location"
+                      size={18}
+                      color={colors.primary}
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.cardHeaderTitle, { color: colors.text }]}>
-                      {language === 'gu' ? 'કાર્યક્ષેત્ર અને તાલુકો' : 'Taluka & Seva Reach'}
+                    <Text
+                      style={[styles.cardHeaderTitle, { color: colors.text }]}
+                    >
+                      {language === 'gu'
+                        ? 'કાર્યક્ષેત્ર અને તાલુકો'
+                        : 'Taluka & Seva Reach'}
                     </Text>
-                    <Text style={[styles.locHeaderSub, { color: colors.textMuted }]}>
+                    <Text
+                      style={[styles.locHeaderSub, { color: colors.textMuted }]}
+                    >
                       {language === 'gu'
                         ? 'જિલ્લો → તાલુકો → ગામ ક્રમે પસંદ કરો'
                         : 'Select District → Taluka → Village'}
@@ -874,31 +911,70 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                 {locationLoading ? (
                   <View style={styles.locLoadingBox}>
                     <ActivityIndicator size="small" color={colors.primary} />
-                    <Text style={[styles.locLoadingText, { color: colors.textMuted }]}>
-                      {language === 'gu' ? 'સ્થાન લોડ થઈ રહ્યું...' : 'Loading locations...'}
+                    <Text
+                      style={[
+                        styles.locLoadingText,
+                        { color: colors.textMuted },
+                      ]}
+                    >
+                      {language === 'gu'
+                        ? 'સ્થાન લોડ થઈ રહ્યું...'
+                        : 'Loading locations...'}
                     </Text>
                   </View>
                 ) : (
                   <>
                     {/* ── STEP 1: DISTRICT ── */}
-                    <View style={[styles.locStepBox, { borderColor: colors.borderSubtle }]}>
+                    <View
+                      style={[
+                        styles.locStepBox,
+                        { borderColor: colors.borderSubtle },
+                      ]}
+                    >
                       <View style={styles.locStepHeader}>
                         <View
                           style={[
                             styles.locStepBadge,
-                            { backgroundColor: selectedDistrictId ? colors.primary : colors.border },
+                            {
+                              backgroundColor: selectedDistrictId
+                                ? colors.primary
+                                : colors.border,
+                            },
                           ]}
                         >
-                          <Text style={[styles.locStepBadgeText, { color: colors.textInverse }]}>1</Text>
+                          <Text
+                            style={[
+                              styles.locStepBadgeText,
+                              { color: colors.textInverse },
+                            ]}
+                          >
+                            1
+                          </Text>
                         </View>
-                        <Text style={[styles.locStepTitle, { color: colors.text }]}>
+                        <Text
+                          style={[styles.locStepTitle, { color: colors.text }]}
+                        >
                           {language === 'gu' ? 'જિલ્લો' : 'District'}
                           <Text style={{ color: colors.primary }}> *</Text>
                         </Text>
                         {selectedDistrictId && (
-                          <View style={[styles.locSelectedBadge, { backgroundColor: colors.primaryContainer }]}>
-                            <Ionicons name="checkmark-circle" size={13} color={colors.onPrimaryContainer} />
-                            <Text style={[styles.locSelectedBadgeText, { color: colors.onPrimaryContainer }]}>
+                          <View
+                            style={[
+                              styles.locSelectedBadge,
+                              { backgroundColor: colors.primaryContainer },
+                            ]}
+                          >
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={13}
+                              color={colors.onPrimaryContainer}
+                            />
+                            <Text
+                              style={[
+                                styles.locSelectedBadgeText,
+                                { color: colors.onPrimaryContainer },
+                              ]}
+                            >
                               {language === 'gu' ? 'પસંદ' : 'Selected'}
                             </Text>
                           </View>
@@ -906,8 +982,15 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                       </View>
 
                       {districtsList.length === 0 ? (
-                        <Text style={[styles.locEmptyHint, { color: colors.textMuted }]}>
-                          {language === 'gu' ? 'ડેટા ઉપલબ્ધ નથી' : 'No data available'}
+                        <Text
+                          style={[
+                            styles.locEmptyHint,
+                            { color: colors.textMuted },
+                          ]}
+                        >
+                          {language === 'gu'
+                            ? 'ડેટા ઉપલબ્ધ નથી'
+                            : 'No data available'}
                         </Text>
                       ) : (
                         <View style={styles.locCardGrid}>
@@ -923,7 +1006,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                     backgroundColor: isSelected
                                       ? colors.primaryContainer
                                       : colors.surfaceSubtle,
-                                    borderColor: isSelected ? colors.primary : colors.borderSubtle,
+                                    borderColor: isSelected
+                                      ? colors.primary
+                                      : colors.borderSubtle,
                                     borderWidth: isSelected ? 1.5 : 1,
                                   },
                                 ]}
@@ -932,26 +1017,38 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                   style={[
                                     styles.locSelCardRadio,
                                     {
-                                      borderColor: isSelected ? colors.primary : colors.border,
-                                      backgroundColor: isSelected ? colors.primary : 'transparent',
+                                      borderColor: isSelected
+                                        ? colors.primary
+                                        : colors.border,
+                                      backgroundColor: isSelected
+                                        ? colors.primary
+                                        : 'transparent',
                                     },
                                   ]}
                                 >
                                   {isSelected && (
-                                    <Ionicons name="checkmark" size={10} color={colors.onPrimaryContainer} />
+                                    <Ionicons
+                                      name="checkmark"
+                                      size={10}
+                                      color={colors.onPrimaryContainer}
+                                    />
                                   )}
                                 </View>
                                 <Text
                                   style={[
                                     styles.locSelCardText,
                                     {
-                                      color: isSelected ? colors.onPrimaryContainer : colors.text,
+                                      color: isSelected
+                                        ? colors.onPrimaryContainer
+                                        : colors.text,
                                       fontWeight: isSelected ? '700' : '500',
                                     },
                                   ]}
                                   numberOfLines={2}
                                 >
-                                  {language === 'gu' ? dist.name_gu : dist.name_en || dist.name_gu}
+                                  {language === 'gu'
+                                    ? dist.name_gu
+                                    : dist.name_en || dist.name_gu}
                                 </Text>
                               </TouchableOpacity>
                             );
@@ -974,19 +1071,46 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                         <View
                           style={[
                             styles.locStepBadge,
-                            { backgroundColor: selectedTalukaId ? colors.primary : colors.border },
+                            {
+                              backgroundColor: selectedTalukaId
+                                ? colors.primary
+                                : colors.border,
+                            },
                           ]}
                         >
-                          <Text style={[styles.locStepBadgeText, { color: colors.textInverse }]}>2</Text>
+                          <Text
+                            style={[
+                              styles.locStepBadgeText,
+                              { color: colors.textInverse },
+                            ]}
+                          >
+                            2
+                          </Text>
                         </View>
-                        <Text style={[styles.locStepTitle, { color: colors.text }]}>
+                        <Text
+                          style={[styles.locStepTitle, { color: colors.text }]}
+                        >
                           {language === 'gu' ? 'તાલુકો' : 'Taluka'}
                           <Text style={{ color: colors.primary }}> *</Text>
                         </Text>
                         {selectedTalukaId && (
-                          <View style={[styles.locSelectedBadge, { backgroundColor: colors.primaryContainer }]}>
-                            <Ionicons name="checkmark-circle" size={13} color={colors.onPrimaryContainer} />
-                            <Text style={[styles.locSelectedBadgeText, { color: colors.onPrimaryContainer }]}>
+                          <View
+                            style={[
+                              styles.locSelectedBadge,
+                              { backgroundColor: colors.primaryContainer },
+                            ]}
+                          >
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={13}
+                              color={colors.onPrimaryContainer}
+                            />
+                            <Text
+                              style={[
+                                styles.locSelectedBadgeText,
+                                { color: colors.onPrimaryContainer },
+                              ]}
+                            >
                               {language === 'gu' ? 'પસંદ' : 'Selected'}
                             </Text>
                           </View>
@@ -995,14 +1119,32 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
 
                       {!selectedDistrictId ? (
                         <View style={styles.locLockedHint}>
-                          <Ionicons name="lock-closed-outline" size={14} color={colors.textMuted} />
-                          <Text style={[styles.locEmptyHint, { color: colors.textMuted }]}>
-                            {language === 'gu' ? 'પ્રથમ જિલ્લો પસંદ કરો' : 'Select a district first'}
+                          <Ionicons
+                            name="lock-closed-outline"
+                            size={14}
+                            color={colors.textMuted}
+                          />
+                          <Text
+                            style={[
+                              styles.locEmptyHint,
+                              { color: colors.textMuted },
+                            ]}
+                          >
+                            {language === 'gu'
+                              ? 'પ્રથમ જિલ્લો પસંદ કરો'
+                              : 'Select a district first'}
                           </Text>
                         </View>
                       ) : availableTalukas.length === 0 ? (
-                        <Text style={[styles.locEmptyHint, { color: colors.textMuted }]}>
-                          {language === 'gu' ? 'તાલુકા ઉપલબ્ધ નથી' : 'No talukas available'}
+                        <Text
+                          style={[
+                            styles.locEmptyHint,
+                            { color: colors.textMuted },
+                          ]}
+                        >
+                          {language === 'gu'
+                            ? 'તાલુકા ઉપલબ્ધ નથી'
+                            : 'No talukas available'}
                         </Text>
                       ) : (
                         <View style={styles.locCardGrid}>
@@ -1018,7 +1160,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                     backgroundColor: isSelected
                                       ? colors.primaryContainer
                                       : colors.surfaceSubtle,
-                                    borderColor: isSelected ? colors.primary : colors.borderSubtle,
+                                    borderColor: isSelected
+                                      ? colors.primary
+                                      : colors.borderSubtle,
                                     borderWidth: isSelected ? 1.5 : 1,
                                   },
                                 ]}
@@ -1027,26 +1171,38 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                   style={[
                                     styles.locSelCardRadio,
                                     {
-                                      borderColor: isSelected ? colors.primary : colors.border,
-                                      backgroundColor: isSelected ? colors.primary : 'transparent',
+                                      borderColor: isSelected
+                                        ? colors.primary
+                                        : colors.border,
+                                      backgroundColor: isSelected
+                                        ? colors.primary
+                                        : 'transparent',
                                     },
                                   ]}
                                 >
                                   {isSelected && (
-                                    <Ionicons name="checkmark" size={10} color={colors.onPrimaryContainer} />
+                                    <Ionicons
+                                      name="checkmark"
+                                      size={10}
+                                      color={colors.onPrimaryContainer}
+                                    />
                                   )}
                                 </View>
                                 <Text
                                   style={[
                                     styles.locSelCardText,
                                     {
-                                      color: isSelected ? colors.onPrimaryContainer : colors.text,
+                                      color: isSelected
+                                        ? colors.onPrimaryContainer
+                                        : colors.text,
                                       fontWeight: isSelected ? '700' : '500',
                                     },
                                   ]}
                                   numberOfLines={2}
                                 >
-                                  {language === 'gu' ? tk.name_gu : tk.name_en || tk.name_gu}
+                                  {language === 'gu'
+                                    ? tk.name_gu
+                                    : tk.name_en || tk.name_gu}
                                 </Text>
                               </TouchableOpacity>
                             );
@@ -1073,14 +1229,27 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                             styles.locStepBadge,
                             {
                               backgroundColor:
-                                selectedVillageIds.length > 0 ? colors.primary : colors.border,
+                                selectedVillageIds.length > 0
+                                  ? colors.primary
+                                  : colors.border,
                             },
                           ]}
                         >
-                          <Text style={[styles.locStepBadgeText, { color: colors.textInverse }]}>3</Text>
+                          <Text
+                            style={[
+                              styles.locStepBadgeText,
+                              { color: colors.textInverse },
+                            ]}
+                          >
+                            3
+                          </Text>
                         </View>
-                        <Text style={[styles.locStepTitle, { color: colors.text }]}>
-                          {language === 'gu' ? 'ગામ (બહુ-પસંદ)' : 'Village (Multi-select)'}
+                        <Text
+                          style={[styles.locStepTitle, { color: colors.text }]}
+                        >
+                          {language === 'gu'
+                            ? 'ગામ (બહુ-પસંદ)'
+                            : 'Village (Multi-select)'}
                         </Text>
                         {selectedVillageIds.length > 0 && (
                           <View
@@ -1089,7 +1258,12 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                               { backgroundColor: colors.primaryContainer },
                             ]}
                           >
-                            <Text style={[styles.locSelectedBadgeText, { color: colors.onPrimaryContainer }]}>
+                            <Text
+                              style={[
+                                styles.locSelectedBadgeText,
+                                { color: colors.onPrimaryContainer },
+                              ]}
+                            >
                               {selectedVillageIds.length}{' '}
                               {language === 'gu' ? 'ગામ' : 'selected'}
                             </Text>
@@ -1098,18 +1272,38 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                         {availableVillages.length > 0 && selectedTalukaId && (
                           <TouchableOpacity
                             onPress={() => {
-                              if (selectedVillageIds.length === availableVillages.length) {
+                              if (
+                                selectedVillageIds.length ===
+                                availableVillages.length
+                              ) {
                                 setSelectedVillageIds([]);
                               } else {
-                                setSelectedVillageIds(availableVillages.map(v => v.id));
+                                setSelectedVillageIds(
+                                  availableVillages.map(v => v.id),
+                                );
                               }
                             }}
-                            style={{ marginLeft: 'auto', paddingHorizontal: 6, paddingVertical: 2 }}
+                            style={{
+                              marginLeft: 'auto',
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                            }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary }}>
-                              {selectedVillageIds.length === availableVillages.length
-                                ? (language === 'gu' ? 'બધા હટાવો' : 'Clear All')
-                                : (language === 'gu' ? 'બધા પસંદ કરો' : 'Select All')}
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                fontWeight: '700',
+                                color: colors.primary,
+                              }}
+                            >
+                              {selectedVillageIds.length ===
+                              availableVillages.length
+                                ? language === 'gu'
+                                  ? 'બધા હટાવો'
+                                  : 'Clear All'
+                                : language === 'gu'
+                                ? 'બધા પસંદ કરો'
+                                : 'Select All'}
                             </Text>
                           </TouchableOpacity>
                         )}
@@ -1117,14 +1311,32 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
 
                       {!selectedTalukaId ? (
                         <View style={styles.locLockedHint}>
-                          <Ionicons name="lock-closed-outline" size={14} color={colors.textMuted} />
-                          <Text style={[styles.locEmptyHint, { color: colors.textMuted }]}>
-                            {language === 'gu' ? 'પ્રથમ તાલુકો પસંદ કરો' : 'Select a taluka first'}
+                          <Ionicons
+                            name="lock-closed-outline"
+                            size={14}
+                            color={colors.textMuted}
+                          />
+                          <Text
+                            style={[
+                              styles.locEmptyHint,
+                              { color: colors.textMuted },
+                            ]}
+                          >
+                            {language === 'gu'
+                              ? 'પ્રથમ તાલુકો પસંદ કરો'
+                              : 'Select a taluka first'}
                           </Text>
                         </View>
                       ) : availableVillages.length === 0 ? (
-                        <Text style={[styles.locEmptyHint, { color: colors.textMuted }]}>
-                          {language === 'gu' ? 'ગામ ઉપલબ્ધ નથી' : 'No villages available'}
+                        <Text
+                          style={[
+                            styles.locEmptyHint,
+                            { color: colors.textMuted },
+                          ]}
+                        >
+                          {language === 'gu'
+                            ? 'ગામ ઉપલબ્ધ નથી'
+                            : 'No villages available'}
                         </Text>
                       ) : (
                         <View style={styles.clusterTagWrap}>
@@ -1140,7 +1352,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                     backgroundColor: sel
                                       ? colors.primaryContainer
                                       : colors.surfaceSubtle,
-                                    borderColor: sel ? colors.primary : colors.borderSubtle,
+                                    borderColor: sel
+                                      ? colors.primary
+                                      : colors.borderSubtle,
                                     borderWidth: sel ? 1.5 : 1,
                                   },
                                 ]}
@@ -1162,12 +1376,16 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                                   style={[
                                     styles.villageChipText,
                                     {
-                                      color: sel ? colors.onPrimaryContainer : colors.text,
+                                      color: sel
+                                        ? colors.onPrimaryContainer
+                                        : colors.text,
                                       fontWeight: sel ? '700' : '500',
                                     },
                                   ]}
                                 >
-                                  {language === 'gu' ? v.name_gu : v.name_en || v.name_gu}
+                                  {language === 'gu'
+                                    ? v.name_gu
+                                    : v.name_en || v.name_gu}
                                 </Text>
                               </TouchableOpacity>
                             );
@@ -1218,24 +1436,35 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                     },
                   ]}
                 >
-                  <Ionicons
-                    name="ribbon"
-                    size={16}
-                    color={colors.primary}
-                  />
+                  <Ionicons name="ribbon" size={16} color={colors.primary} />
                   <View style={{ flex: 1 }}>
                     {selectedDomains.length === 0 ? (
-                      <Text style={[styles.domainDropdownPlaceholder, { color: colors.textMuted }]}>
+                      <Text
+                        style={[
+                          styles.domainDropdownPlaceholder,
+                          { color: colors.textMuted },
+                        ]}
+                      >
                         {language === 'gu'
                           ? 'સેવા ક્ષેત્ર પસંદ કરો...'
                           : 'Select seva domains...'}
                       </Text>
                     ) : (
-                      <Text style={[styles.domainDropdownValue, { color: colors.text }]} numberOfLines={2}>
+                      <Text
+                        style={[
+                          styles.domainDropdownValue,
+                          { color: colors.text },
+                        ]}
+                        numberOfLines={2}
+                      >
                         {selectedDomains
                           .map(id => {
                             const d = domainsList.find(x => x.id === id);
-                            return d ? (language === 'gu' ? d.titleGu : d.title) : id;
+                            return d
+                              ? language === 'gu'
+                                ? d.titleGu
+                                : d.title
+                              : id;
                           })
                           .join(', ')}
                       </Text>
@@ -1252,15 +1481,31 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                       },
                     ]}
                   >
-                    <Text style={[styles.domainCountText, { color: colors.onPrimaryContainer }]}>
+                    <Text
+                      style={[
+                        styles.domainCountText,
+                        { color: colors.onPrimaryContainer },
+                      ]}
+                    >
                       {selectedDomains.length}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textMuted}
+                  />
                 </TouchableOpacity>
 
                 {selectedDomains.length > 0 && (
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      gap: 6,
+                      marginTop: 8,
+                    }}
+                  >
                     {selectedDomains.map(id => {
                       const d = domainsList.find(x => x.id === id);
                       return d ? (
@@ -1275,15 +1520,28 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                             },
                           ]}
                         >
-                          <Ionicons name="checkmark-circle" size={12} color={colors.onPrimaryContainer} />
-                          <Text style={[styles.domainChipText, { color: colors.onPrimaryContainer }]}>
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={12}
+                            color={colors.onPrimaryContainer}
+                          />
+                          <Text
+                            style={[
+                              styles.domainChipText,
+                              { color: colors.onPrimaryContainer },
+                            ]}
+                          >
                             {language === 'gu' ? d.titleGu : d.title}
                           </Text>
                           <TouchableOpacity
                             onPress={() => toggleDomain(id)}
                             hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                           >
-                            <Ionicons name="close" size={13} color={colors.onPrimaryContainer} />
+                            <Ionicons
+                              name="close"
+                              size={13}
+                              color={colors.onPrimaryContainer}
+                            />
                           </TouchableOpacity>
                         </View>
                       ) : null;
@@ -1425,17 +1683,30 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
           <View
             style={[
               styles.domainModalCard,
-              { backgroundColor: colors.surface, borderColor: colors.borderSubtle, borderWidth: 1 },
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.borderSubtle,
+                borderWidth: 1,
+              },
             ]}
           >
-            <View style={[styles.domainModalHandle, { backgroundColor: colors.borderSubtle }]} />
+            <View
+              style={[
+                styles.domainModalHandle,
+                { backgroundColor: colors.borderSubtle },
+              ]}
+            />
 
             {/* Modal Header */}
             <View style={styles.domainModalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
                 <Ionicons name="ribbon" size={20} color={colors.primary} />
                 <Text style={[styles.domainModalTitle, { color: colors.text }]}>
-                  {language === 'gu' ? 'સેવા ક્ષેત્ર પસંદ કરો' : 'Select Seva Domains'}
+                  {language === 'gu'
+                    ? 'સેવા ક્ષેત્ર પસંદ કરો'
+                    : 'Select Seva Domains'}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setShowDomainsModal(false)}>
@@ -1464,8 +1735,17 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                     },
                   ]}
                 >
-                  <Ionicons name="checkmark-circle" size={14} color={colors.onPrimaryContainer} />
-                  <Text style={[styles.domainModalSelectedBarText, { color: colors.onPrimaryContainer }]}>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={14}
+                    color={colors.onPrimaryContainer}
+                  />
+                  <Text
+                    style={[
+                      styles.domainModalSelectedBarText,
+                      { color: colors.onPrimaryContainer },
+                    ]}
+                  >
                     {language === 'gu'
                       ? `${selectedDomains.length} ક્ષેત્ર પસંદ`
                       : `${selectedDomains.length} domain(s) selected`}
@@ -1484,7 +1764,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                         backgroundColor: active
                           ? colors.primaryContainer
                           : colors.surfaceSubtle,
-                        borderColor: active ? colors.primary : colors.borderSubtle,
+                        borderColor: active
+                          ? colors.primary
+                          : colors.borderSubtle,
                       },
                     ]}
                   >
@@ -1492,20 +1774,32 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                       style={[
                         styles.domainModalCheckbox,
                         {
-                          borderColor: active ? colors.onPrimaryContainer : colors.border,
-                          backgroundColor: active ? colors.primary : 'transparent',
+                          borderColor: active
+                            ? colors.onPrimaryContainer
+                            : colors.border,
+                          backgroundColor: active
+                            ? colors.primary
+                            : 'transparent',
                         },
                       ]}
                     >
                       {active && (
-                        <Ionicons name="checkmark" size={14} color={colors.onPrimaryContainer} />
+                        <Ionicons
+                          name="checkmark"
+                          size={14}
+                          color={colors.onPrimaryContainer}
+                        />
                       )}
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text
                         style={[
                           styles.domainModalItemTitle,
-                          { color: active ? colors.onPrimaryContainer : colors.text },
+                          {
+                            color: active
+                              ? colors.onPrimaryContainer
+                              : colors.text,
+                          },
                         ]}
                       >
                         {language === 'gu' ? item.titleGu : item.title}
@@ -1514,7 +1808,9 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                         style={[
                           styles.domainModalItemDesc,
                           {
-                            color: active ? colors.onPrimaryContainer : colors.textMuted,
+                            color: active
+                              ? colors.onPrimaryContainer
+                              : colors.textMuted,
                             opacity: active ? 0.9 : 1,
                           },
                         ]}
@@ -1523,9 +1819,11 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
                       </Text>
                     </View>
                     <Ionicons
-                      name={item.icon as any || 'ribbon-outline'}
+                      name={(item.icon as any) || 'ribbon-outline'}
                       size={20}
-                      color={active ? colors.onPrimaryContainer : colors.textMuted}
+                      color={
+                        active ? colors.onPrimaryContainer : colors.textMuted
+                      }
                     />
                   </TouchableOpacity>
                 );
@@ -1534,9 +1832,17 @@ export const SignupScreen: React.FC<Props> = ({ onSuccess, onLogin }) => {
 
             <TouchableOpacity
               onPress={() => setShowDomainsModal(false)}
-              style={[styles.domainModalDoneBtn, { backgroundColor: colors.primary }]}
+              style={[
+                styles.domainModalDoneBtn,
+                { backgroundColor: colors.primary },
+              ]}
             >
-              <Text style={[styles.domainModalDoneText, { color: colors.textInverse }]}>
+              <Text
+                style={[
+                  styles.domainModalDoneText,
+                  { color: colors.textInverse },
+                ]}
+              >
                 {language === 'gu'
                   ? `કર્યું (${selectedDomains.length} પસંદ)`
                   : `Done (${selectedDomains.length} selected)`}
@@ -1700,7 +2006,12 @@ const styles = StyleSheet.create({
   },
   locSelCardText: { fontSize: 12 },
   locEmptyHint: { fontSize: 12, fontStyle: 'italic', marginTop: 2 },
-  locLockedHint: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
+  locLockedHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
   villageChip: {
     flexDirection: 'row',
     alignItems: 'center',
